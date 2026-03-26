@@ -14,7 +14,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     return next();
   }
 
-  const secret = process.env.SESSION_SECRET;
+  const secret = (context.locals as any).runtime?.env?.SESSION_SECRET as string | undefined;
   if (!secret) {
     return new Response(JSON.stringify({ error: 'Server misconfigured' }), {
       status: 500,

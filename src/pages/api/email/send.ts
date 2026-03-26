@@ -30,9 +30,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
     });
   }
 
-  const apiKey = process.env.RESEND_API_KEY ?? '';
-  const senderEmail = process.env.SENDER_EMAIL ?? 'noreply@example.com';
-  const senderName = process.env.SENDER_NAME ?? 'Prospect Tracker';
+  const apiKey = (locals.runtime.env.RESEND_API_KEY as string) ?? '';
+  const senderEmail = (locals.runtime.env.SENDER_EMAIL as string) ?? 'noreply@example.com';
+  const senderName = (locals.runtime.env.SENDER_NAME as string) ?? 'Prospect Tracker';
 
   let emailStatus: 'sent' | 'failed' = 'sent';
   let error: string | null = null;
