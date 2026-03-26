@@ -15,7 +15,11 @@ async function hmacSign(payload: string, secret: string): Promise<string> {
 
 async function hmacVerify(payload: string, signature: string, secret: string): Promise<boolean> {
   const expected = await hmacSign(payload, secret);
-  return expected === signature;
+  if (expected.length !== signature.length) return false;
+  const encoder = new TextEncoder();
+  const a = encoder.encode(expected);
+  const b = encoder.encode(signature);
+  return crypto.subtle.timingSafeEqual(a, b);
 }
 
 export async function createSessionCookie(secret: string): Promise<string> {

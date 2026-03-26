@@ -1,5 +1,6 @@
 import { useEffect, useRef, useMemo } from 'react';
 import { STATUS_CONFIG } from '../../lib/constants';
+import { escapeHtml } from '../../lib/utils';
 import type { Company } from './types';
 
 // Leaflet types
@@ -89,7 +90,7 @@ export default function MapView({ companies, selectedCompanyId, onSelectCompany 
       });
 
       marker.bindTooltip(
-        `<div style="font-family:'DM Sans',sans-serif;font-size:12px;"><strong>${c.name}</strong><br/><span style="color:${statusColor}">${STATUS_CONFIG[c.status]?.label || c.status}</span></div>`,
+        `<div style="font-family:'DM Sans',sans-serif;font-size:12px;"><strong>${escapeHtml(c.name)}</strong><br/><span style="color:${statusColor}">${escapeHtml(STATUS_CONFIG[c.status]?.label || c.status)}</span></div>`,
         { direction: 'top', offset: [0, -8] }
       );
 

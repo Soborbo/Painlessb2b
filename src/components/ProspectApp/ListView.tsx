@@ -63,13 +63,14 @@ export default function ListView({ companies, totalCount, onSelectCompany }: Pro
     return sortDir === 'asc' ? <ChevronUp size={12} /> : <ChevronDown size={12} />;
   };
 
-  const columns: { key: ColKey; label: string; width: string; sortable: boolean }[] = [
+  // Column definitions - Contact/Email/Phone are display-only, not sortable
+  const columns: { key: ColKey | 'contact' | 'email' | 'phone'; label: string; width: string; sortable: boolean }[] = [
     { key: 'status', label: '', width: '40px', sortable: true },
     { key: 'name', label: 'Name', width: 'auto', sortable: true },
     { key: 'category_name', label: 'Category', width: '120px', sortable: true },
-    { key: 'name', label: 'Contact', width: '160px', sortable: false }, // not actually sortable by contact
-    { key: 'name', label: 'Email', width: '180px', sortable: false },
-    { key: 'name', label: 'Phone', width: '120px', sortable: false },
+    { key: 'contact', label: 'Contact', width: '160px', sortable: false },
+    { key: 'email', label: 'Email', width: '180px', sortable: false },
+    { key: 'phone', label: 'Phone', width: '120px', sortable: false },
     { key: 'priority', label: 'Priority', width: '80px', sortable: true },
     { key: 'follow_up', label: 'Follow-up', width: '100px', sortable: true },
     { key: 'updated', label: 'Updated', width: '100px', sortable: true },

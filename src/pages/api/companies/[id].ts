@@ -30,6 +30,15 @@ export const PUT: APIRoute = async ({ params, request, locals }) => {
     });
   }
 
+  // Verify company exists before updating
+  const existing = await db.prepare('SELECT id FROM companies WHERE id = ?').bind(id).first();
+  if (!existing) {
+    return new Response(JSON.stringify({ error: 'Company not found' }), {
+      status: 404,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
   fields.push('updated_at = ?');
   values.push(now);
   values.push(id);
@@ -42,13 +51,6 @@ export const PUT: APIRoute = async ({ params, request, locals }) => {
     LEFT JOIN categories cat ON c.category_id = cat.id
     WHERE c.id = ?
   `).bind(id).first();
-
-  if (!company) {
-    return new Response(JSON.stringify({ error: 'Company not found' }), {
-      status: 404,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  }
 
   return new Response(JSON.stringify(company), {
     headers: { 'Content-Type': 'application/json' },

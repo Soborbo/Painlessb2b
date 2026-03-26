@@ -113,10 +113,12 @@ export default function DetailDrawer({ company, categories, drawerMode, onClose,
   // Fetch notes
   useEffect(() => {
     if (!company || drawerMode === 'create') { setNotes([]); return; }
+    let cancelled = false;
     fetch(`/api/notes/${company.id}`)
-      .then((r) => r.json())
-      .then(setNotes)
+      .then((r) => { if (!r.ok) throw new Error('Failed to fetch notes'); return r.json(); })
+      .then((data) => { if (!cancelled) setNotes(data); })
       .catch(() => {});
+    return () => { cancelled = true; };
   }, [company?.id, drawerMode]);
 
   // Escape key

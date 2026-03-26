@@ -5,8 +5,15 @@ export const POST: APIRoute = async ({ request }) => {
   const body = await request.json();
   const { password } = body;
 
-  const authPassword = process.env.AUTH_PASSWORD ?? '';
-  const sessionSecret = process.env.SESSION_SECRET ?? '';
+  const authPassword = process.env.AUTH_PASSWORD;
+  const sessionSecret = process.env.SESSION_SECRET;
+
+  if (!authPassword || !sessionSecret) {
+    return new Response(JSON.stringify({ error: 'Server misconfigured' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
 
   if (!password || password !== authPassword) {
     return new Response(JSON.stringify({ error: 'Invalid password' }), {
