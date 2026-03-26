@@ -9,6 +9,8 @@ export default defineConfig({
     platformProxy: {
       enabled: true,
     },
+    imageService: 'passthrough',
+    sessions: false,
   }),
   integrations: [react()],
   vite: {
