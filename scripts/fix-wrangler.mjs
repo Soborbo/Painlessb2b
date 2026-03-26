@@ -23,7 +23,7 @@ const distDir = resolve(__dirname, '../dist');
 // 1. Copy server entry + chunks into dist/client/_worker.js/
 const workerDir = resolve(distDir, 'client/_worker.js');
 mkdirSync(workerDir, { recursive: true });
-cpSync(resolve(distDir, 'server/entry.mjs'), resolve(workerDir, 'index.mjs'));
+cpSync(resolve(distDir, 'server/entry.mjs'), resolve(workerDir, 'index.js'));
 cpSync(resolve(distDir, 'server/chunks'), resolve(workerDir, 'chunks'), { recursive: true });
 
 // 2. Fix wrangler.json — remove Workers-only fields that Pages rejects
