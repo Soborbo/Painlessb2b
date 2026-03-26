@@ -1,8 +1,8 @@
 name = "prospect-tracker"
 compatibility_date = "2025-04-01"
-pages_build_output_dir = "./dist"
+pages_build_output_dir = "./dist/client"
 
 [[d1_databases]]
 binding = "DB"
-database_name = "prospect-tracker-db"
-database_id = "local-dev-db"
+database_name = "b2bpainless"
+database_id = "12a5d670-5bdc-4b7c-b5ce-98fe234d7dd2"
