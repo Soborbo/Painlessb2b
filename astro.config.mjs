@@ -10,8 +10,12 @@ export default defineConfig({
       enabled: true,
     },
     imageService: 'passthrough',
-    sessions: false,
   }),
+  // Use a noop driver to prevent the adapter from adding a KV SESSION binding
+  // (we use our own HMAC cookie auth, not Astro sessions)
+  session: {
+    driver: 'fs-lite',
+  },
   integrations: [react()],
   vite: {
     plugins: [tailwindcss()],
