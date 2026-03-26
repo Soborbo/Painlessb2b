@@ -14,9 +14,25 @@ export const POST: APIRoute = async ({ request, locals }) => {
     });
   }
 
-  const apiKey = process.env.RESEND_API_KEY ?? '';
-  const senderEmail = process.env.SENDER_EMAIL ?? 'noreply@example.com';
-  const senderName = process.env.SENDER_NAME ?? 'Prospect Tracker';
+  if (!company_id) {
+    return new Response(JSON.stringify({ error: 'Missing required field: company_id' }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  // Validate email format
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(to_email)) {
+    return new Response(JSON.stringify({ error: 'Invalid email address' }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  const apiKey = (locals.runtime.env.RESEND_API_KEY as string) ?? '';
+  const senderEmail = (locals.runtime.env.SENDER_EMAIL as string) ?? 'noreply@example.com';
+  const senderName = (locals.runtime.env.SENDER_NAME as string) ?? 'Prospect Tracker';
 
   let emailStatus: 'sent' | 'failed' = 'sent';
   let error: string | null = null;

@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { STATUS_CONFIG } from '../../lib/constants';
+import { escapeHtml } from '../../lib/utils';
 import type { Company, HeatmapMode } from './types';
 
 declare const L: any;
@@ -99,7 +100,7 @@ export default function HeatmapView({ companies, selectedCompanyId, onSelectComp
       });
 
       marker.bindTooltip(
-        `<div style="font-family:'DM Sans',sans-serif;font-size:12px;"><strong>${c.name}</strong><br/><span style="color:${statusColor}">${STATUS_CONFIG[c.status]?.label || c.status}</span></div>`,
+        `<div style="font-family:'DM Sans',sans-serif;font-size:12px;"><strong>${escapeHtml(c.name)}</strong><br/><span style="color:${statusColor}">${escapeHtml(STATUS_CONFIG[c.status]?.label || c.status)}</span></div>`,
         { direction: 'top', offset: [0, -8] }
       );
 

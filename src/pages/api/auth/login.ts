@@ -1,12 +1,19 @@
 import type { APIRoute } from 'astro';
 import { createSessionCookie } from '../../../lib/auth';
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, locals }) => {
   const body = await request.json();
   const { password } = body;
 
-  const authPassword = process.env.AUTH_PASSWORD ?? '';
-  const sessionSecret = process.env.SESSION_SECRET ?? '';
+  const authPassword = locals.runtime.env.AUTH_PASSWORD as string | undefined;
+  const sessionSecret = locals.runtime.env.SESSION_SECRET as string | undefined;
+
+  if (!authPassword || !sessionSecret) {
+    return new Response(JSON.stringify({ error: 'Server misconfigured' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
 
   if (!password || password !== authPassword) {
     return new Response(JSON.stringify({ error: 'Invalid password' }), {

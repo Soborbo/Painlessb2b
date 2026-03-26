@@ -157,6 +157,11 @@ export default function ProspectApp() {
         fetch('/api/categories'),
         fetch('/api/reminders'),
       ]);
+
+      if (!companiesRes.ok || !categoriesRes.ok || !remindersRes.ok) {
+        throw new Error('Failed to fetch data');
+      }
+
       const companies = await companiesRes.json();
       const categories = await categoriesRes.json();
       const reminders = await remindersRes.json();
