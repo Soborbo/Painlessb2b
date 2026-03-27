@@ -43,5 +43,12 @@ delete config.assets;
 delete config.no_bundle;
 delete config.triggers;
 
+// Remove auto-generated KV namespace bindings without an "id" (e.g. SESSION)
+// The Astro Cloudflare adapter adds these for Astro sessions but we use custom auth
+if (Array.isArray(config.kv_namespaces)) {
+  config.kv_namespaces = config.kv_namespaces.filter(ns => ns.id);
+  if (config.kv_namespaces.length === 0) delete config.kv_namespaces;
+}
+
 writeFileSync(wranglerPath, JSON.stringify(config));
 console.log('Restructured build output for Cloudflare Pages.');
