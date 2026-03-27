@@ -134,7 +134,7 @@ export default function HeatmapView({ companies, selectedCompanyId, onSelectComp
   }, [companies, selectedCompanyId, onSelectCompany, heatmapMode]);
 
   return (
-    <div className="flex-1 relative">
+    <div className="flex-1 relative" style={{ zIndex: 0 }}>
       <div ref={mapContainerRef} className="absolute inset-0" />
 
       {/* Mode toggle */}

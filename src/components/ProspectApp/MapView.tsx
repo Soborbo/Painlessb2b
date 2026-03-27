@@ -114,7 +114,7 @@ export default function MapView({ companies, selectedCompanyId, onSelectCompany 
   }, [selectedCompanyId, companies]);
 
   return (
-    <div className="flex-1 relative">
+    <div className="flex-1 relative" style={{ zIndex: 0 }}>
       <div ref={mapContainerRef} className="absolute inset-0" />
       <style>{`
         .overdue-pulse {
