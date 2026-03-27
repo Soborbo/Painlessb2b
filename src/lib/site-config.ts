@@ -4,7 +4,7 @@
 
 export const SITE_CONFIG = {
   /** Company / product name shown in the UI */
-  name: 'Prospect Tracker',
+  name: 'Painless Removals',
 
   /** Short tagline (login page, etc.) */
   tagline: 'B2B prospect management',
