@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { THEME } from '../../lib/site-config';
 import type { Company, SortBy } from './types';
 import ProspectCard from './ProspectCard';
 
@@ -56,18 +57,18 @@ export default function ListPanel({ companies, totalCount, selectedCompanyId, on
   return (
     <div
       className="w-[380px] flex-shrink-0 flex flex-col h-full"
-      style={{ backgroundColor: '#13151e', borderLeft: '1px solid #2a2d42' }}
+      style={{ backgroundColor: THEME.surface, borderLeft: `1px solid ${THEME.border}` }}
     >
       {/* Header */}
-      <div className="px-3 py-2.5 flex items-center justify-between" style={{ borderBottom: '1px solid #2a2d42' }}>
-        <span className="text-xs font-mono" style={{ color: '#8990b0' }}>
+      <div className="px-3 py-2.5 flex items-center justify-between" style={{ borderBottom: `1px solid ${THEME.border}` }}>
+        <span className="text-xs font-mono" style={{ color: THEME.textSecondary }}>
           Showing {companies.length} of {totalCount} prospects
         </span>
         <select
           value={sortBy}
           onChange={(e) => onSortChange(e.target.value as SortBy)}
           className="text-xs rounded px-2 py-1 outline-none cursor-pointer"
-          style={{ backgroundColor: '#1a1d2a', border: '1px solid #2a2d42', color: '#e8eaf4' }}
+          style={{ backgroundColor: THEME.elevated, border: `1px solid ${THEME.border}`, color: THEME.textPrimary }}
         >
           {SORT_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value}>{opt.label}</option>

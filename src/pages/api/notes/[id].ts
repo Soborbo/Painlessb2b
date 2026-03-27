@@ -1,8 +1,8 @@
 import type { APIRoute } from 'astro';
-import { env } from 'cloudflare:workers';
+import { getCfEnv } from '../../../lib/cf-env';
 
 export const GET: APIRoute = async ({ params }) => {
-  const db = (env as any).DB;
+  const { DB: db } = await getCfEnv();
   const { id } = params;
 
   // id here is company_id for GET requests
@@ -16,7 +16,7 @@ export const GET: APIRoute = async ({ params }) => {
 };
 
 export const DELETE: APIRoute = async ({ params }) => {
-  const db = (env as any).DB;
+  const { DB: db } = await getCfEnv();
   const { id } = params;
 
   await db.prepare('DELETE FROM notes WHERE id = ?').bind(id).run();

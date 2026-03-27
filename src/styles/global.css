@@ -1,15 +1,15 @@
 @import "tailwindcss";
 
 @theme {
-  --color-base: #0c0e14;
-  --color-surface: #13151e;
-  --color-elevated: #1a1d2a;
-  --color-border: #2a2d42;
-  --color-text-primary: #e8eaf4;
-  --color-text-secondary: #8990b0;
-  --color-text-muted: #5c6280;
-  --color-accent: #818cf8;
-  --color-accent-dark: #6366f1;
+  --color-base: #f5f2ed;
+  --color-surface: #ffffff;
+  --color-elevated: #eceae5;
+  --color-border: #d4d0ca;
+  --color-text-primary: #1a1a2e;
+  --color-text-secondary: #5a6070;
+  --color-text-muted: #8a8f9c;
+  --color-accent: #123d53;
+  --color-accent-dark: #0d2c3d;
 }
 
 @font-face {
@@ -62,7 +62,7 @@ body {
 
 /* Focus rings — keyboard only */
 *:focus-visible {
-  outline: 2px solid #818cf8;
+  outline: 2px solid var(--color-accent);
   outline-offset: 2px;
 }
 
@@ -85,14 +85,14 @@ button:active:not(:disabled) {
 }
 
 ::-webkit-scrollbar-track {
-  background: #0c0e14;
+  background: var(--color-base);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #2a2d42;
+  background: var(--color-border);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #3a3d52;
+  background: var(--color-border);
 }

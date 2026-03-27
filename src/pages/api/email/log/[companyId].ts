@@ -1,8 +1,8 @@
 import type { APIRoute } from 'astro';
-import { env } from 'cloudflare:workers';
+import { getCfEnv } from '../../../../lib/cf-env';
 
 export const GET: APIRoute = async ({ params }) => {
-  const db = (env as any).DB;
+  const { DB: db } = await getCfEnv();
   const { companyId } = params;
 
   const { results } = await db.prepare(

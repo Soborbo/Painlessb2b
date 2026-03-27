@@ -1,3 +1,5 @@
+import { THEME } from '../../lib/site-config';
+
 interface Props {
   currentDate: string | null;
   onChange: (date: string | null) => void;
@@ -35,13 +37,13 @@ export default function FollowUpPicker({ currentDate, onChange }: Props) {
           value={currentDate || ''}
           onChange={(e) => onChange(e.target.value || null)}
           className="flex-1 px-3 py-1.5 rounded-[6px] text-sm outline-none"
-          style={{ backgroundColor: '#1a1d2a', border: '1px solid #2a2d42', color: '#e8eaf4', colorScheme: 'dark' }}
+          style={{ backgroundColor: THEME.elevated, border: `1px solid ${THEME.border}`, color: THEME.textPrimary }}
         />
         {currentDate && (
           <button
             onClick={() => onChange(null)}
             className="text-xs px-2 py-1 rounded cursor-pointer"
-            style={{ color: '#8990b0' }}
+            style={{ color: THEME.textSecondary }}
           >
             Clear
           </button>
@@ -53,7 +55,7 @@ export default function FollowUpPicker({ currentDate, onChange }: Props) {
             key={btn.label}
             onClick={() => onChange(addDays(btn.days))}
             className="text-xs px-2.5 py-1 rounded-[6px] transition-all duration-200 cursor-pointer"
-            style={{ backgroundColor: '#1a1d2a', border: '1px solid #2a2d42', color: '#e8eaf4' }}
+            style={{ backgroundColor: THEME.elevated, border: `1px solid ${THEME.border}`, color: THEME.textPrimary }}
           >
             {btn.label}
           </button>

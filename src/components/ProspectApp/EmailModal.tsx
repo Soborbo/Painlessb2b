@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { X, Send, ChevronDown, Loader2 } from 'lucide-react';
 import { EMAIL_TEMPLATES, TEMPLATE_NAMES } from '../../lib/email-templates';
+import { THEME } from '../../lib/site-config';
 import type { Company, EmailLog } from './types';
 import type { TemplateName } from '../../lib/email-templates';
 
@@ -82,11 +83,11 @@ export default function EmailModal({ company, open, onClose, onSent, onToast }: 
       <div className="absolute inset-0 bg-black/60" onClick={onClose} />
       <div
         className="relative w-full max-w-lg rounded-[14px] p-6 max-h-[90vh] overflow-y-auto"
-        style={{ backgroundColor: '#13151e', border: '1px solid #2a2d42' }}
+        style={{ backgroundColor: THEME.surface, border: `1px solid ${THEME.border}` }}
       >
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold" style={{ color: '#e8eaf4' }}>Send Email</h2>
-          <button onClick={onClose} className="p-1 cursor-pointer" style={{ color: '#8990b0' }}>
+          <h2 className="text-lg font-semibold" style={{ color: THEME.textPrimary }}>Send Email</h2>
+          <button onClick={onClose} className="p-1 cursor-pointer" style={{ color: THEME.textSecondary }}>
             <X size={20} />
           </button>
         </div>
@@ -94,12 +95,12 @@ export default function EmailModal({ company, open, onClose, onSent, onToast }: 
         <div className="space-y-3">
           {/* Template selector */}
           <div>
-            <label className="text-xs uppercase tracking-wider mb-1 block" style={{ color: '#5c6280' }}>Template</label>
+            <label className="text-xs uppercase tracking-wider mb-1 block" style={{ color: THEME.textMuted }}>Template</label>
             <select
               value={template}
               onChange={(e) => applyTemplate(e.target.value as TemplateName)}
               className="w-full px-3 py-2 rounded-[6px] text-sm outline-none cursor-pointer"
-              style={{ backgroundColor: '#1a1d2a', border: '1px solid #2a2d42', color: '#e8eaf4' }}
+              style={{ backgroundColor: THEME.elevated, border: `1px solid ${THEME.border}`, color: THEME.textPrimary }}
             >
               {TEMPLATE_NAMES.map((name) => (
                 <option key={name} value={name}>{EMAIL_TEMPLATES[name].label}</option>
@@ -109,37 +110,37 @@ export default function EmailModal({ company, open, onClose, onSent, onToast }: 
 
           {/* To */}
           <div>
-            <label className="text-xs uppercase tracking-wider mb-1 block" style={{ color: '#5c6280' }}>To</label>
+            <label className="text-xs uppercase tracking-wider mb-1 block" style={{ color: THEME.textMuted }}>To</label>
             <input
               type="email"
               value={toEmail}
               onChange={(e) => setToEmail(e.target.value)}
               className="w-full px-3 py-2 rounded-[6px] text-sm outline-none"
-              style={{ backgroundColor: '#1a1d2a', border: '1px solid #2a2d42', color: '#e8eaf4' }}
+              style={{ backgroundColor: THEME.elevated, border: `1px solid ${THEME.border}`, color: THEME.textPrimary }}
             />
           </div>
 
           {/* Subject */}
           <div>
-            <label className="text-xs uppercase tracking-wider mb-1 block" style={{ color: '#5c6280' }}>Subject</label>
+            <label className="text-xs uppercase tracking-wider mb-1 block" style={{ color: THEME.textMuted }}>Subject</label>
             <input
               type="text"
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
               className="w-full px-3 py-2 rounded-[6px] text-sm outline-none"
-              style={{ backgroundColor: '#1a1d2a', border: '1px solid #2a2d42', color: '#e8eaf4' }}
+              style={{ backgroundColor: THEME.elevated, border: `1px solid ${THEME.border}`, color: THEME.textPrimary }}
             />
           </div>
 
           {/* Body */}
           <div>
-            <label className="text-xs uppercase tracking-wider mb-1 block" style={{ color: '#5c6280' }}>Body</label>
+            <label className="text-xs uppercase tracking-wider mb-1 block" style={{ color: THEME.textMuted }}>Body</label>
             <textarea
               value={body}
               onChange={(e) => setBody(e.target.value)}
               rows={10}
               className="w-full px-3 py-2 rounded-[6px] text-sm outline-none resize-none"
-              style={{ backgroundColor: '#1a1d2a', border: '1px solid #2a2d42', color: '#e8eaf4' }}
+              style={{ backgroundColor: THEME.elevated, border: `1px solid ${THEME.border}`, color: THEME.textPrimary }}
             />
           </div>
 
@@ -148,7 +149,7 @@ export default function EmailModal({ company, open, onClose, onSent, onToast }: 
             onClick={handleSend}
             disabled={sending}
             className="w-full flex items-center justify-center gap-2 py-2.5 rounded-[10px] text-sm font-semibold transition-all duration-200 cursor-pointer disabled:opacity-60"
-            style={{ backgroundColor: '#818cf8', color: '#fff' }}
+            style={{ backgroundColor: THEME.accent, color: THEME.accentForeground }}
           >
             {sending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
             {sending ? 'Sending...' : 'Send Email'}
@@ -157,11 +158,11 @@ export default function EmailModal({ company, open, onClose, onSent, onToast }: 
 
         {/* Email history */}
         {emailLog.length > 0 && (
-          <div className="mt-4 pt-4" style={{ borderTop: '1px solid #2a2d42' }}>
+          <div className="mt-4 pt-4" style={{ borderTop: `1px solid ${THEME.border}` }}>
             <button
               onClick={() => setShowHistory(!showHistory)}
               className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider cursor-pointer"
-              style={{ color: '#5c6280' }}
+              style={{ color: THEME.textMuted }}
             >
               <ChevronDown size={14} className={`transition-transform ${showHistory ? 'rotate-180' : ''}`} />
               Email History ({emailLog.length})
@@ -172,10 +173,10 @@ export default function EmailModal({ company, open, onClose, onSent, onToast }: 
                   <div
                     key={log.id}
                     className="px-3 py-2 rounded-[6px] text-sm"
-                    style={{ backgroundColor: '#1a1d2a' }}
+                    style={{ backgroundColor: THEME.elevated }}
                   >
                     <div className="flex items-center justify-between">
-                      <span style={{ color: '#e8eaf4' }}>{log.subject}</span>
+                      <span style={{ color: THEME.textPrimary }}>{log.subject}</span>
                       <span
                         className="text-xs"
                         style={{ color: log.status === 'sent' ? '#10b981' : '#ef4444' }}
@@ -183,7 +184,7 @@ export default function EmailModal({ company, open, onClose, onSent, onToast }: 
                         {log.status}
                       </span>
                     </div>
-                    <div className="text-xs mt-1" style={{ color: '#5c6280' }}>
+                    <div className="text-xs mt-1" style={{ color: THEME.textMuted }}>
                       To: {log.to_email} · {new Date(log.sent_at).toLocaleDateString()}
                     </div>
                   </div>

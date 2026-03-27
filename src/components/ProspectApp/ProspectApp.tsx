@@ -1,4 +1,5 @@
 import { useReducer, useEffect, useCallback, useMemo } from 'react';
+import { THEME } from '../../lib/site-config';
 import type { AppState, Action, Company, Filters, SortBy } from './types';
 import TopBar from './TopBar';
 import Sidebar from './Sidebar';
@@ -298,15 +299,15 @@ export default function ProspectApp() {
   }, [state.sortBy, state.sortDir]);
 
   return (
-    <div className="h-screen flex flex-col" style={{ backgroundColor: '#0c0e14' }}>
+    <div className="h-screen flex flex-col" style={{ backgroundColor: THEME.base }}>
       {/* Desktop-only overlay */}
       <div
         className="fixed inset-0 z-[200] flex items-center justify-center p-8 lg:hidden"
-        style={{ backgroundColor: '#0c0e14' }}
+        style={{ backgroundColor: THEME.base }}
       >
         <div className="text-center">
-          <p className="text-lg font-semibold mb-2" style={{ color: '#e8eaf4' }}>Desktop Only</p>
-          <p className="text-sm" style={{ color: '#8990b0' }}>
+          <p className="text-lg font-semibold mb-2" style={{ color: THEME.textPrimary }}>Desktop Only</p>
+          <p className="text-sm" style={{ color: THEME.textSecondary }}>
             Use a desktop browser (1024px+) for the best experience.
           </p>
         </div>
@@ -329,14 +330,14 @@ export default function ProspectApp() {
             <div className="flex-1 flex">
               {/* Main skeleton */}
               <div className="flex-1 p-4">
-                <div className="h-full rounded-[10px] animate-pulse" style={{ backgroundColor: '#1a1d2a' }} />
+                <div className="h-full rounded-[10px] animate-pulse" style={{ backgroundColor: THEME.elevated }} />
               </div>
               {/* List panel skeleton */}
-              <div className="w-[380px] p-4 space-y-3" style={{ borderLeft: '1px solid #2a2d42' }}>
+              <div className="w-[380px] p-4 space-y-3" style={{ borderLeft: `1px solid ${THEME.border}` }}>
                 {[...Array(8)].map((_, i) => (
-                  <div key={i} className="space-y-2 p-3 rounded-[6px] animate-pulse" style={{ backgroundColor: '#1a1d2a' }}>
-                    <div className="h-3 rounded" style={{ backgroundColor: '#2a2d42', width: '70%' }} />
-                    <div className="h-2 rounded" style={{ backgroundColor: '#2a2d42', width: '40%' }} />
+                  <div key={i} className="space-y-2 p-3 rounded-[6px] animate-pulse" style={{ backgroundColor: THEME.elevated }}>
+                    <div className="h-3 rounded" style={{ backgroundColor: THEME.border, width: '70%' }} />
+                    <div className="h-2 rounded" style={{ backgroundColor: THEME.border, width: '40%' }} />
                   </div>
                 ))}
               </div>

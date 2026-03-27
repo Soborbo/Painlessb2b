@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { X, MessageSquare, Send } from 'lucide-react';
+import { THEME } from '../../lib/site-config';
 import { formatRelativeTime } from '../../lib/utils';
 import type { Note } from './types';
 
@@ -43,7 +44,7 @@ export default function NoteTimeline({ notes, companyId, onAddNote, onDeleteNote
           placeholder="Add a note..."
           rows={2}
           className="flex-1 px-3 py-2 rounded-[6px] text-sm outline-none resize-none"
-          style={{ backgroundColor: '#1a1d2a', border: '1px solid #2a2d42', color: '#e8eaf4' }}
+          style={{ backgroundColor: THEME.elevated, border: `1px solid ${THEME.border}`, color: THEME.textPrimary }}
           onKeyDown={(e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
               e.preventDefault();
@@ -55,7 +56,7 @@ export default function NoteTimeline({ notes, companyId, onAddNote, onDeleteNote
           onClick={handleSubmit}
           disabled={!noteText.trim()}
           className="self-end p-2 rounded-[6px] transition-all duration-200 cursor-pointer disabled:opacity-40"
-          style={{ backgroundColor: '#818cf8', color: '#fff' }}
+          style={{ backgroundColor: THEME.accent, color: THEME.accentForeground }}
         >
           <Send size={16} />
         </button>
@@ -70,17 +71,17 @@ export default function NoteTimeline({ notes, companyId, onAddNote, onDeleteNote
               key={note.id}
               className="relative px-3 py-2 rounded-[6px] group"
               style={{
-                backgroundColor: auto ? 'transparent' : '#1a1d2a',
-                borderLeft: auto ? '2px solid #2a2d42' : 'none',
+                backgroundColor: auto ? 'transparent' : THEME.elevated,
+                borderLeft: auto ? `2px solid ${THEME.border}` : 'none',
               }}
             >
               <div className="flex items-start gap-2">
-                {auto && <MessageSquare size={12} className="mt-1 flex-shrink-0" style={{ color: '#5c6280' }} />}
+                {auto && <MessageSquare size={12} className="mt-1 flex-shrink-0" style={{ color: THEME.textMuted }} />}
                 <div className="flex-1 min-w-0">
-                  <p className={`text-sm ${auto ? 'italic' : ''}`} style={{ color: auto ? '#5c6280' : '#e8eaf4' }}>
+                  <p className={`text-sm ${auto ? 'italic' : ''}`} style={{ color: auto ? THEME.textMuted : THEME.textPrimary }}>
                     {note.body}
                   </p>
-                  <span className="text-xs" style={{ color: '#5c6280' }}>
+                  <span className="text-xs" style={{ color: THEME.textMuted }}>
                     {formatRelativeTime(note.created_at)}
                   </span>
                 </div>
@@ -88,7 +89,7 @@ export default function NoteTimeline({ notes, companyId, onAddNote, onDeleteNote
                   <button
                     onClick={() => handleDelete(note.id)}
                     className="opacity-0 group-hover:opacity-100 p-1 rounded cursor-pointer transition-opacity"
-                    style={{ color: confirmDelete === note.id ? '#ef4444' : '#8990b0' }}
+                    style={{ color: confirmDelete === note.id ? '#ef4444' : THEME.textSecondary }}
                     title={confirmDelete === note.id ? 'Click again to confirm' : 'Delete note'}
                   >
                     <X size={14} />

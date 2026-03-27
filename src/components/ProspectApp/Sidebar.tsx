@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Search, X, Settings } from 'lucide-react';
 import { STATUS_CONFIG, PRIORITY_CONFIG } from '../../lib/constants';
+import { THEME } from '../../lib/site-config';
 import type { AppState, Action, Company, Category, Status, Priority } from './types';
 import FilterCheckbox from './FilterCheckbox';
 
@@ -45,24 +46,24 @@ export default function Sidebar({ state, dispatch, filteredCompanies }: Props) {
   return (
     <aside
       className="w-[280px] flex-shrink-0 h-full overflow-y-auto p-4 flex flex-col gap-5"
-      style={{ backgroundColor: '#13151e', borderRight: '1px solid #2a2d42' }}
+      style={{ backgroundColor: THEME.surface, borderRight: `1px solid ${THEME.border}` }}
     >
       {/* Search */}
       <div className="relative">
-        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#5c6280' }} />
+        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: THEME.textMuted }} />
         <input
           type="text"
           placeholder="Search prospects..."
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
           className="w-full pl-9 pr-8 py-2.5 rounded-[10px] text-sm outline-none transition-all duration-200"
-          style={{ backgroundColor: '#1a1d2a', border: '1px solid #2a2d42', color: '#e8eaf4' }}
+          style={{ backgroundColor: THEME.elevated, border: `1px solid ${THEME.border}`, color: THEME.textPrimary }}
         />
         {searchInput && (
           <button
             onClick={() => { setSearchInput(''); dispatch({ type: 'SET_FILTER_SEARCH', payload: '' }); }}
             className="absolute right-2 top-1/2 -translate-y-1/2 p-1 cursor-pointer"
-            style={{ color: '#5c6280' }}
+            style={{ color: THEME.textMuted }}
           >
             <X size={14} />
           </button>
@@ -71,7 +72,7 @@ export default function Sidebar({ state, dispatch, filteredCompanies }: Props) {
 
       {/* Status filters */}
       <div>
-        <h3 className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: '#5c6280' }}>Status</h3>
+        <h3 className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: THEME.textMuted }}>Status</h3>
         <div className="space-y-1">
           {(Object.entries(STATUS_CONFIG) as [Status, typeof STATUS_CONFIG[Status]][]).map(([key, cfg]) => (
             <FilterCheckbox
@@ -89,7 +90,7 @@ export default function Sidebar({ state, dispatch, filteredCompanies }: Props) {
 
       {/* Category filters */}
       <div>
-        <h3 className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: '#5c6280' }}>Category</h3>
+        <h3 className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: THEME.textMuted }}>Category</h3>
         <div className="space-y-1">
           {state.categories.map((cat) => (
             <FilterCheckbox
@@ -107,7 +108,7 @@ export default function Sidebar({ state, dispatch, filteredCompanies }: Props) {
 
       {/* Priority filters */}
       <div>
-        <h3 className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: '#5c6280' }}>Priority</h3>
+        <h3 className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: THEME.textMuted }}>Priority</h3>
         <div className="space-y-1">
           {(Object.entries(PRIORITY_CONFIG) as [Priority, typeof PRIORITY_CONFIG[Priority]][]).map(([key, cfg]) => (
             <FilterCheckbox
@@ -127,7 +128,7 @@ export default function Sidebar({ state, dispatch, filteredCompanies }: Props) {
         <label className="flex items-center gap-2 cursor-pointer">
           <div
             className="w-8 h-4 rounded-full relative transition-all duration-200 cursor-pointer"
-            style={{ backgroundColor: state.filters.hasEmail ? '#818cf8' : '#2a2d42' }}
+            style={{ backgroundColor: state.filters.hasEmail ? THEME.accent : THEME.border }}
             onClick={() => dispatch({ type: 'TOGGLE_HAS_EMAIL' })}
           >
             <div
@@ -135,13 +136,13 @@ export default function Sidebar({ state, dispatch, filteredCompanies }: Props) {
               style={{ left: state.filters.hasEmail ? '17px' : '2px' }}
             />
           </div>
-          <span className="text-sm" style={{ color: '#e8eaf4' }}>Has email</span>
+          <span className="text-sm" style={{ color: THEME.textPrimary }}>Has email</span>
         </label>
 
         <label className="flex items-center gap-2 cursor-pointer">
           <div
             className="w-8 h-4 rounded-full relative transition-all duration-200 cursor-pointer"
-            style={{ backgroundColor: state.filters.hasContact ? '#818cf8' : '#2a2d42' }}
+            style={{ backgroundColor: state.filters.hasContact ? THEME.accent : THEME.border }}
             onClick={() => dispatch({ type: 'TOGGLE_HAS_CONTACT' })}
           >
             <div
@@ -149,13 +150,13 @@ export default function Sidebar({ state, dispatch, filteredCompanies }: Props) {
               style={{ left: state.filters.hasContact ? '17px' : '2px' }}
             />
           </div>
-          <span className="text-sm" style={{ color: '#e8eaf4' }}>Has contact</span>
+          <span className="text-sm" style={{ color: THEME.textPrimary }}>Has contact</span>
         </label>
 
         <label className="flex items-center gap-2 cursor-pointer">
           <div
             className="w-8 h-4 rounded-full relative transition-all duration-200 cursor-pointer"
-            style={{ backgroundColor: state.filters.overdueOnly ? '#f97316' : '#2a2d42' }}
+            style={{ backgroundColor: state.filters.overdueOnly ? '#f97316' : THEME.border }}
             onClick={() => dispatch({ type: 'TOGGLE_OVERDUE_ONLY' })}
           >
             <div
@@ -163,7 +164,7 @@ export default function Sidebar({ state, dispatch, filteredCompanies }: Props) {
               style={{ left: state.filters.overdueOnly ? '17px' : '2px' }}
             />
           </div>
-          <span className="text-sm" style={{ color: '#e8eaf4' }}>Overdue follow-up</span>
+          <span className="text-sm" style={{ color: THEME.textPrimary }}>Overdue follow-up</span>
         </label>
       </div>
 
@@ -172,7 +173,7 @@ export default function Sidebar({ state, dispatch, filteredCompanies }: Props) {
         <button
           onClick={() => { dispatch({ type: 'CLEAR_FILTERS' }); setSearchInput(''); }}
           className="text-sm py-2 rounded-[6px] transition-all duration-200 cursor-pointer"
-          style={{ color: '#818cf8' }}
+          style={{ color: THEME.accent }}
         >
           Clear all filters
         </button>
@@ -182,7 +183,7 @@ export default function Sidebar({ state, dispatch, filteredCompanies }: Props) {
       <button
         onClick={() => dispatch({ type: 'SET_CATEGORY_MANAGER', payload: true })}
         className="flex items-center gap-2 text-sm py-2 rounded-[6px] transition-all duration-200 cursor-pointer mt-auto"
-        style={{ color: '#8990b0' }}
+        style={{ color: THEME.textSecondary }}
       >
         <Settings size={14} />
         Manage Categories

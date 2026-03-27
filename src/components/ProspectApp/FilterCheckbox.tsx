@@ -1,3 +1,5 @@
+import { THEME } from '../../lib/site-config';
+
 interface Props {
   label: string;
   checked: boolean;
@@ -16,7 +18,7 @@ export default function FilterCheckbox({ label, checked, onChange, color, count,
             ? 'border-accent bg-accent'
             : 'border-border bg-transparent'
         }`}
-        style={checked ? { borderColor: '#818cf8', backgroundColor: '#818cf8' } : { borderColor: '#2a2d42' }}
+        style={checked ? { borderColor: THEME.accent, backgroundColor: THEME.accent } : { borderColor: THEME.border }}
       >
         {checked && (
           <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
@@ -31,9 +33,9 @@ export default function FilterCheckbox({ label, checked, onChange, color, count,
           style={{ backgroundColor: color }}
         />
       )}
-      <span className="text-sm flex-1" style={{ color: '#e8eaf4' }}>{label}</span>
+      <span className="text-sm flex-1" style={{ color: THEME.textPrimary }}>{label}</span>
       {count !== undefined && (
-        <span className="text-xs font-mono" style={{ color: '#5c6280' }}>{count}</span>
+        <span className="text-xs font-mono" style={{ color: THEME.textMuted }}>{count}</span>
       )}
     </label>
   );

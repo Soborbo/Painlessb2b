@@ -1,9 +1,9 @@
 import type { APIRoute } from 'astro';
-import { env } from 'cloudflare:workers';
+import { getCfEnv } from '../../../lib/cf-env';
 import { generateId } from '../../../lib/utils';
 
 export const GET: APIRoute = async ({ request }) => {
-  const db = (env as any).DB;
+  const { DB: db } = await getCfEnv();
   const url = new URL(request.url);
 
   const status = url.searchParams.get('status');
@@ -74,7 +74,7 @@ export const GET: APIRoute = async ({ request }) => {
 };
 
 export const POST: APIRoute = async ({ request }) => {
-  const db = (env as any).DB;
+  const { DB: db } = await getCfEnv();
   const body = await request.json();
   const id = generateId();
   const now = new Date().toISOString();

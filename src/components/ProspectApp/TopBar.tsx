@@ -1,5 +1,6 @@
 import { MapPin, List, Columns3, Flame, Bell, Plus, LogOut } from 'lucide-react';
 import { STATUS_CONFIG } from '../../lib/constants';
+import { THEME, SITE_CONFIG } from '../../lib/site-config';
 import type { AppState, Action, Company, View } from './types';
 import ImportExport from './ImportExport';
 
@@ -29,7 +30,7 @@ export default function TopBar({ state, dispatch, filteredCompanies, onRefresh }
   ).length;
 
   const statChips = [
-    { label: 'Total', count: total, color: '#818cf8', filterStatuses: null },
+    { label: 'Total', count: total, color: THEME.accent, filterStatuses: null },
     { label: 'New', count: newCount, color: STATUS_CONFIG.new.color, filterStatuses: ['new'] },
     { label: 'In Progress', count: inProgress, color: STATUS_CONFIG.contacted.color, filterStatuses: ['contacted', 'follow_up', 'in_conversation'] },
     { label: 'Partners', count: partners, color: STATUS_CONFIG.partner.color, filterStatuses: ['partner'] },
@@ -52,13 +53,13 @@ export default function TopBar({ state, dispatch, filteredCompanies, onRefresh }
   return (
     <header
       className="flex items-center gap-4 px-4 py-2 h-[56px]"
-      style={{ backgroundColor: '#13151e', borderBottom: '1px solid #2a2d42' }}
+      style={{ backgroundColor: THEME.surface, borderBottom: `1px solid ${THEME.border}` }}
     >
       {/* Left: App name */}
       <div className="flex items-center gap-2 mr-4">
-        <MapPin size={20} style={{ color: '#818cf8' }} />
-        <span className="font-semibold text-sm whitespace-nowrap" style={{ color: '#e8eaf4' }}>
-          Prospect Tracker
+        <MapPin size={20} style={{ color: THEME.accent }} />
+        <span className="font-semibold text-sm whitespace-nowrap" style={{ color: THEME.textPrimary }}>
+          {SITE_CONFIG.name}
         </span>
       </div>
 
@@ -69,11 +70,11 @@ export default function TopBar({ state, dispatch, filteredCompanies, onRefresh }
             key={chip.label}
             onClick={() => handleChipClick(chip.filterStatuses)}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 cursor-pointer"
-            style={{ backgroundColor: '#1a1d2a', border: '1px solid #2a2d42', color: '#e8eaf4' }}
+            style={{ backgroundColor: THEME.elevated, border: `1px solid ${THEME.border}`, color: THEME.textPrimary }}
           >
             <span className="w-2 h-2 rounded-full" style={{ backgroundColor: chip.color }} />
             <span>{chip.label}</span>
-            <span className="font-mono" style={{ color: '#8990b0' }}>{chip.count}</span>
+            <span className="font-mono" style={{ color: THEME.textSecondary }}>{chip.count}</span>
           </button>
         ))}
       </div>
@@ -81,15 +82,15 @@ export default function TopBar({ state, dispatch, filteredCompanies, onRefresh }
       {/* Right: Actions */}
       <div className="flex items-center gap-2">
         {/* View toggle */}
-        <div className="flex items-center rounded-[6px] overflow-hidden" style={{ border: '1px solid #2a2d42' }}>
+        <div className="flex items-center rounded-[6px] overflow-hidden" style={{ border: `1px solid ${THEME.border}` }}>
           {VIEW_OPTIONS.map((opt) => (
             <button
               key={opt.key}
               onClick={() => dispatch({ type: 'SET_VIEW', payload: opt.key })}
               className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium transition-all duration-200 cursor-pointer"
               style={{
-                backgroundColor: state.view === opt.key ? '#818cf8' : 'transparent',
-                color: state.view === opt.key ? '#fff' : '#8990b0',
+                backgroundColor: state.view === opt.key ? THEME.accent : 'transparent',
+                color: state.view === opt.key ? THEME.accentForeground : THEME.textSecondary,
               }}
             >
               {opt.icon}
@@ -102,14 +103,14 @@ export default function TopBar({ state, dispatch, filteredCompanies, onRefresh }
         <button
           onClick={() => dispatch({ type: 'TOGGLE_OVERDUE_ONLY' })}
           className="relative p-2 rounded-[6px] transition-all duration-200 cursor-pointer"
-          style={{ color: state.overdueCount > 0 ? '#f97316' : '#8990b0' }}
+          style={{ color: state.overdueCount > 0 ? '#f97316' : THEME.textSecondary }}
           title="Overdue follow-ups"
         >
           <Bell size={18} />
           {state.overdueCount > 0 && (
             <span
               className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full text-[10px] font-mono font-bold flex items-center justify-center"
-              style={{ backgroundColor: '#ef4444', color: '#fff' }}
+              style={{ backgroundColor: '#ef4444', color: THEME.accentForeground }}
             >
               {state.overdueCount > 9 ? '9+' : state.overdueCount}
             </span>
@@ -134,7 +135,7 @@ export default function TopBar({ state, dispatch, filteredCompanies, onRefresh }
             dispatch({ type: 'SET_SELECTED_COMPANY', payload: 'new' });
           }}
           className="flex items-center gap-1 px-3 py-1.5 rounded-[6px] text-xs font-medium transition-all duration-200 cursor-pointer"
-          style={{ backgroundColor: '#818cf8', color: '#fff' }}
+          style={{ backgroundColor: THEME.accent, color: THEME.accentForeground }}
         >
           <Plus size={14} />
           Add
@@ -144,7 +145,7 @@ export default function TopBar({ state, dispatch, filteredCompanies, onRefresh }
         <button
           onClick={handleLogout}
           className="p-2 rounded-[6px] transition-all duration-200 cursor-pointer"
-          style={{ color: '#8990b0' }}
+          style={{ color: THEME.textSecondary }}
           title="Logout"
         >
           <LogOut size={18} />

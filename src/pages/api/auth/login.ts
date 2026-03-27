@@ -1,13 +1,14 @@
 import type { APIRoute } from 'astro';
-import { env } from 'cloudflare:workers';
+import { getCfEnv } from '../../../lib/cf-env';
 import { createSessionCookie } from '../../../lib/auth';
 
 export const POST: APIRoute = async ({ request }) => {
+  const cfEnv = await getCfEnv();
   const body = await request.json();
   const { password } = body;
 
-  const authPassword = (env as any).AUTH_PASSWORD as string | undefined;
-  const sessionSecret = (env as any).SESSION_SECRET as string | undefined;
+  const authPassword = cfEnv.AUTH_PASSWORD as string | undefined;
+  const sessionSecret = cfEnv.SESSION_SECRET as string | undefined;
 
   if (!authPassword || !sessionSecret) {
     return new Response(JSON.stringify({ error: 'Server misconfigured' }), {

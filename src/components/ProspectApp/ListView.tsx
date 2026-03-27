@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { ChevronUp, ChevronDown } from 'lucide-react';
 import { STATUS_CONFIG, PRIORITY_CONFIG } from '../../lib/constants';
+import { THEME } from '../../lib/site-config';
 import { formatRelativeTime } from '../../lib/utils';
 import type { Company, SortBy } from './types';
 import PriorityBadge from './PriorityBadge';
@@ -78,48 +79,48 @@ export default function ListView({ companies, totalCount, onSelectCompany }: Pro
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
-      <div className="px-4 py-2 text-xs font-mono" style={{ color: '#8990b0' }}>
+      <div className="px-4 py-2 text-xs font-mono" style={{ color: THEME.textSecondary }}>
         Showing {companies.length} of {totalCount} prospects
       </div>
       <div className="flex-1 overflow-auto">
         <table className="w-full text-sm" style={{ borderCollapse: 'separate', borderSpacing: 0 }}>
           <thead className="sticky top-0 z-10">
-            <tr style={{ backgroundColor: '#13151e' }}>
+            <tr style={{ backgroundColor: THEME.surface }}>
               {/* Status */}
-              <th className="w-[40px] px-2 py-2 text-left cursor-pointer" style={{ borderBottom: '1px solid #2a2d42' }} onClick={() => toggleSort('status')}>
-                <div className="flex items-center gap-1" style={{ color: '#5c6280' }}><SortIcon col="status" /></div>
+              <th className="w-[40px] px-2 py-2 text-left cursor-pointer" style={{ borderBottom: `1px solid ${THEME.border}` }} onClick={() => toggleSort('status')}>
+                <div className="flex items-center gap-1" style={{ color: THEME.textMuted }}><SortIcon col="status" /></div>
               </th>
               {/* Name */}
-              <th className="px-2 py-2 text-left cursor-pointer" style={{ borderBottom: '1px solid #2a2d42' }} onClick={() => toggleSort('name')}>
-                <div className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider" style={{ color: '#5c6280' }}>Name <SortIcon col="name" /></div>
+              <th className="px-2 py-2 text-left cursor-pointer" style={{ borderBottom: `1px solid ${THEME.border}` }} onClick={() => toggleSort('name')}>
+                <div className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider" style={{ color: THEME.textMuted }}>Name <SortIcon col="name" /></div>
               </th>
               {/* Category */}
-              <th className="w-[120px] px-2 py-2 text-left cursor-pointer" style={{ borderBottom: '1px solid #2a2d42' }} onClick={() => toggleSort('category_name')}>
-                <div className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider" style={{ color: '#5c6280' }}>Category <SortIcon col="category_name" /></div>
+              <th className="w-[120px] px-2 py-2 text-left cursor-pointer" style={{ borderBottom: `1px solid ${THEME.border}` }} onClick={() => toggleSort('category_name')}>
+                <div className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider" style={{ color: THEME.textMuted }}>Category <SortIcon col="category_name" /></div>
               </th>
               {/* Contact */}
-              <th className="w-[160px] px-2 py-2 text-left" style={{ borderBottom: '1px solid #2a2d42' }}>
-                <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: '#5c6280' }}>Contact</span>
+              <th className="w-[160px] px-2 py-2 text-left" style={{ borderBottom: `1px solid ${THEME.border}` }}>
+                <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: THEME.textMuted }}>Contact</span>
               </th>
               {/* Email */}
-              <th className="w-[180px] px-2 py-2 text-left" style={{ borderBottom: '1px solid #2a2d42' }}>
-                <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: '#5c6280' }}>Email</span>
+              <th className="w-[180px] px-2 py-2 text-left" style={{ borderBottom: `1px solid ${THEME.border}` }}>
+                <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: THEME.textMuted }}>Email</span>
               </th>
               {/* Phone */}
-              <th className="w-[120px] px-2 py-2 text-left" style={{ borderBottom: '1px solid #2a2d42' }}>
-                <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: '#5c6280' }}>Phone</span>
+              <th className="w-[120px] px-2 py-2 text-left" style={{ borderBottom: `1px solid ${THEME.border}` }}>
+                <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: THEME.textMuted }}>Phone</span>
               </th>
               {/* Priority */}
-              <th className="w-[80px] px-2 py-2 text-left cursor-pointer" style={{ borderBottom: '1px solid #2a2d42' }} onClick={() => toggleSort('priority')}>
-                <div className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider" style={{ color: '#5c6280' }}>Priority <SortIcon col="priority" /></div>
+              <th className="w-[80px] px-2 py-2 text-left cursor-pointer" style={{ borderBottom: `1px solid ${THEME.border}` }} onClick={() => toggleSort('priority')}>
+                <div className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider" style={{ color: THEME.textMuted }}>Priority <SortIcon col="priority" /></div>
               </th>
               {/* Follow-up */}
-              <th className="w-[100px] px-2 py-2 text-left cursor-pointer" style={{ borderBottom: '1px solid #2a2d42' }} onClick={() => toggleSort('follow_up')}>
-                <div className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider" style={{ color: '#5c6280' }}>Follow-up <SortIcon col="follow_up" /></div>
+              <th className="w-[100px] px-2 py-2 text-left cursor-pointer" style={{ borderBottom: `1px solid ${THEME.border}` }} onClick={() => toggleSort('follow_up')}>
+                <div className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider" style={{ color: THEME.textMuted }}>Follow-up <SortIcon col="follow_up" /></div>
               </th>
               {/* Updated */}
-              <th className="w-[100px] px-2 py-2 text-left cursor-pointer" style={{ borderBottom: '1px solid #2a2d42' }} onClick={() => toggleSort('updated')}>
-                <div className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider" style={{ color: '#5c6280' }}>Updated <SortIcon col="updated" /></div>
+              <th className="w-[100px] px-2 py-2 text-left cursor-pointer" style={{ borderBottom: `1px solid ${THEME.border}` }} onClick={() => toggleSort('updated')}>
+                <div className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider" style={{ color: THEME.textMuted }}>Updated <SortIcon col="updated" /></div>
               </th>
             </tr>
           </thead>
@@ -142,21 +143,21 @@ export default function ListView({ companies, totalCount, onSelectCompany }: Pro
                   <td className="px-2 py-2.5">
                     <span className="w-2.5 h-2.5 rounded-full inline-block" style={{ backgroundColor: statusColor }} />
                   </td>
-                  <td className="px-2 py-2.5 font-semibold" style={{ color: '#e8eaf4' }}>{c.name}</td>
+                  <td className="px-2 py-2.5 font-semibold" style={{ color: THEME.textPrimary }}>{c.name}</td>
                   <td className="px-2 py-2.5">
-                    <span className="flex items-center gap-1 text-xs" style={{ color: '#8990b0' }}>
+                    <span className="flex items-center gap-1 text-xs" style={{ color: THEME.textSecondary }}>
                       {c.category_color && <span className="w-2 h-2 rounded-[2px]" style={{ backgroundColor: c.category_color }} />}
                       {c.category_name || '—'}
                     </span>
                   </td>
-                  <td className="px-2 py-2.5 text-sm" style={{ color: '#8990b0' }}>{c.contact_name || '—'}</td>
-                  <td className="px-2 py-2.5 text-xs truncate max-w-[180px]" style={{ color: '#8990b0' }}>{email || '—'}</td>
-                  <td className="px-2 py-2.5 text-xs" style={{ color: '#8990b0' }}>{phone || '—'}</td>
+                  <td className="px-2 py-2.5 text-sm" style={{ color: THEME.textSecondary }}>{c.contact_name || '—'}</td>
+                  <td className="px-2 py-2.5 text-xs truncate max-w-[180px]" style={{ color: THEME.textSecondary }}>{email || '—'}</td>
+                  <td className="px-2 py-2.5 text-xs" style={{ color: THEME.textSecondary }}>{phone || '—'}</td>
                   <td className="px-2 py-2.5"><PriorityBadge priority={c.priority} /></td>
-                  <td className="px-2 py-2.5 text-xs font-mono" style={{ color: overdue ? '#ef4444' : '#8990b0' }}>
+                  <td className="px-2 py-2.5 text-xs font-mono" style={{ color: overdue ? '#ef4444' : THEME.textSecondary }}>
                     {c.follow_up_date ? new Date(c.follow_up_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : '—'}
                   </td>
-                  <td className="px-2 py-2.5 text-xs" style={{ color: '#5c6280' }}>{formatRelativeTime(c.updated_at)}</td>
+                  <td className="px-2 py-2.5 text-xs" style={{ color: THEME.textMuted }}>{formatRelativeTime(c.updated_at)}</td>
                 </tr>
               );
             })}

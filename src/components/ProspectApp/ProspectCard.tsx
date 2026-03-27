@@ -1,4 +1,5 @@
 import { STATUS_CONFIG } from '../../lib/constants';
+import { THEME } from '../../lib/site-config';
 import { formatRelativeTime } from '../../lib/utils';
 import type { Company } from './types';
 import PriorityBadge from './PriorityBadge';
@@ -30,8 +31,8 @@ export default function ProspectCard({ company, selected, onClick }: Props) {
       onClick={onClick}
       className="px-3 py-2.5 cursor-pointer transition-all duration-200 group"
       style={{
-        borderLeft: `3px solid ${selected ? '#818cf8' : 'transparent'}`,
-        backgroundColor: selected ? '#1a1d2a' : 'transparent',
+        borderLeft: `3px solid ${selected ? THEME.accent : 'transparent'}`,
+        backgroundColor: selected ? THEME.elevated : 'transparent',
       }}
     >
       <div className="flex items-start gap-2">
@@ -41,12 +42,12 @@ export default function ProspectCard({ company, selected, onClick }: Props) {
         />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold truncate" style={{ color: '#e8eaf4' }}>
+            <span className="text-sm font-semibold truncate" style={{ color: THEME.textPrimary }}>
               {company.name}
             </span>
             {company.priority === 'high' && <PriorityBadge priority="high" />}
           </div>
-          <div className="text-xs mt-0.5" style={{ color: '#5c6280' }}>
+          <div className="text-xs mt-0.5" style={{ color: THEME.textMuted }}>
             {company.category_name || 'Uncategorized'}
           </div>
           {overdue && (
@@ -55,7 +56,7 @@ export default function ProspectCard({ company, selected, onClick }: Props) {
             </div>
           )}
         </div>
-        <span className="text-xs flex-shrink-0" style={{ color: '#5c6280' }}>
+        <span className="text-xs flex-shrink-0" style={{ color: THEME.textMuted }}>
           {formatRelativeTime(company.updated_at)}
         </span>
       </div>

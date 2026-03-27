@@ -1,8 +1,8 @@
 import type { APIRoute } from 'astro';
-import { env } from 'cloudflare:workers';
+import { getCfEnv } from '../../../lib/cf-env';
 
 export const PUT: APIRoute = async ({ params, request }) => {
-  const db = (env as any).DB;
+  const { DB: db } = await getCfEnv();
   const { id } = params;
   const body = await request.json();
   const now = new Date().toISOString();
@@ -59,7 +59,7 @@ export const PUT: APIRoute = async ({ params, request }) => {
 };
 
 export const DELETE: APIRoute = async ({ params }) => {
-  const db = (env as any).DB;
+  const { DB: db } = await getCfEnv();
   const { id } = params;
 
   // Foreign keys with ON DELETE CASCADE handle notes and email_log

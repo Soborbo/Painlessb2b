@@ -1,9 +1,10 @@
 import type { APIRoute } from 'astro';
-import { env } from 'cloudflare:workers';
+import { getCfEnv } from '../../../lib/cf-env';
 import { generateId } from '../../../lib/utils';
+import { SITE_CONFIG } from '../../../lib/site-config';
 
 export const GET: APIRoute = async () => {
-  const db = (env as any).DB;
+  const { DB: db } = await getCfEnv();
 
   const { results } = await db.prepare(`
     SELECT cat.*, COUNT(c.id) as company_count
@@ -19,13 +20,13 @@ export const GET: APIRoute = async () => {
 };
 
 export const POST: APIRoute = async ({ request }) => {
-  const db = (env as any).DB;
+  const { DB: db } = await getCfEnv();
   const body = await request.json();
   const id = generateId();
 
   await db.prepare(`
     INSERT INTO categories (id, name, color) VALUES (?, ?, ?)
-  `).bind(id, body.name, body.color || '#6366f1').run();
+  `).bind(id, body.name, body.color || SITE_CONFIG.defaultCategoryColor).run();
 
   const category = await db.prepare('SELECT * FROM categories WHERE id = ?').bind(id).first();
   return new Response(JSON.stringify(category), {

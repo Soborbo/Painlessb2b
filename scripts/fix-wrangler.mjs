@@ -25,6 +25,13 @@ const workerDir = resolve(distDir, 'client/_worker.js');
 mkdirSync(workerDir, { recursive: true });
 cpSync(resolve(distDir, 'server/entry.mjs'), resolve(workerDir, 'index.js'));
 cpSync(resolve(distDir, 'server/chunks'), resolve(workerDir, 'chunks'), { recursive: true });
+// Copy middleware and any other .mjs files at server root
+import { readdirSync } from 'node:fs';
+for (const file of readdirSync(resolve(distDir, 'server'))) {
+  if (file.endsWith('.mjs') && file !== 'entry.mjs') {
+    cpSync(resolve(distDir, 'server', file), resolve(workerDir, file));
+  }
+}
 
 // 2. Fix wrangler.json — remove Workers-only fields that Pages rejects
 const wranglerPath = resolve(distDir, 'server/wrangler.json');

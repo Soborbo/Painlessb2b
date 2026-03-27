@@ -4,3 +4,5 @@ dist/
 .wrangler/
 .dev.vars
 .mf/
+references/
+scripts/import_data.json

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useMemo } from 'react';
 import { STATUS_CONFIG } from '../../lib/constants';
 import { escapeHtml } from '../../lib/utils';
+import { THEME, SITE_CONFIG } from '../../lib/site-config';
 import type { Company } from './types';
 
 // Leaflet types
@@ -29,13 +30,13 @@ export default function MapView({ companies, selectedCompanyId, onSelectCompany 
     if (!mapContainerRef.current || mapRef.current) return;
 
     const map = L.map(mapContainerRef.current, {
-      center: [51.4545, -2.5979],
-      zoom: 12,
+      center: SITE_CONFIG.map.center,
+      zoom: SITE_CONFIG.map.zoom,
       zoomControl: false,
     });
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    L.tileLayer(SITE_CONFIG.mapTileUrl, {
+      attribution: SITE_CONFIG.mapTileAttribution,
       subdomains: 'abcd',
       maxZoom: 19,
     }).addTo(map);
@@ -66,7 +67,7 @@ export default function MapView({ companies, selectedCompanyId, onSelectCompany 
       iconCreateFunction: (clusterObj: any) => {
         const count = clusterObj.getChildCount();
         return L.divIcon({
-          html: `<div style="background:#1a1d2a;border:2px solid #818cf8;color:#e8eaf4;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;">${count}</div>`,
+          html: `<div style="background:${THEME.elevated};border:2px solid ${THEME.accent};color:${THEME.textPrimary};border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;">${count}</div>`,
           className: '',
           iconSize: [36, 36],
         });
@@ -84,7 +85,7 @@ export default function MapView({ companies, selectedCompanyId, onSelectCompany 
         radius: selected ? 10 : 7,
         fillColor: statusColor,
         fillOpacity: 0.9,
-        color: selected ? '#e8eaf4' : overdue ? '#f97316' : statusColor,
+        color: selected ? THEME.textPrimary : overdue ? '#f97316' : statusColor,
         weight: selected ? 3 : overdue ? 2 : 1.5,
         className: overdue ? 'overdue-pulse' : '',
       });
@@ -125,23 +126,23 @@ export default function MapView({ companies, selectedCompanyId, onSelectCompany 
           100% { opacity: 1; }
         }
         .leaflet-control-zoom a {
-          background-color: #1a1d2a !important;
-          color: #e8eaf4 !important;
-          border-color: #2a2d42 !important;
+          background-color: ${THEME.elevated} !important;
+          color: ${THEME.textPrimary} !important;
+          border-color: ${THEME.border} !important;
         }
         .leaflet-control-zoom a:hover {
-          background-color: #2a2d42 !important;
+          background-color: ${THEME.border} !important;
         }
         .leaflet-tooltip {
-          background-color: #13151e !important;
-          border: 1px solid #2a2d42 !important;
-          color: #e8eaf4 !important;
+          background-color: ${THEME.surface} !important;
+          border: 1px solid ${THEME.border} !important;
+          color: ${THEME.textPrimary} !important;
           border-radius: 6px !important;
           padding: 6px 10px !important;
           box-shadow: 0 4px 12px rgba(0,0,0,0.4) !important;
         }
         .leaflet-tooltip-top:before {
-          border-top-color: #2a2d42 !important;
+          border-top-color: ${THEME.border} !important;
         }
       `}</style>
     </div>

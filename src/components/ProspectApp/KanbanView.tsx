@@ -1,4 +1,5 @@
 import { STATUS_CONFIG, STATUSES } from '../../lib/constants';
+import { THEME } from '../../lib/site-config';
 import type { Company, Status } from './types';
 
 interface Props {
@@ -31,19 +32,19 @@ export default function KanbanView({ companies, onSelectCompany }: Props) {
             <div
               key={status}
               className="w-[240px] flex-shrink-0 flex flex-col rounded-[10px]"
-              style={{ backgroundColor: '#13151e' }}
+              style={{ backgroundColor: THEME.surface }}
             >
               {/* Column header */}
-              <div className="px-3 py-2.5 flex items-center gap-2" style={{ borderBottom: '1px solid #2a2d42' }}>
+              <div className="px-3 py-2.5 flex items-center gap-2" style={{ borderBottom: `1px solid ${THEME.border}` }}>
                 <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: config.color }} />
-                <span className="text-xs font-semibold" style={{ color: '#e8eaf4' }}>{config.label}</span>
-                <span className="text-xs font-mono ml-auto" style={{ color: '#5c6280' }}>{cards.length}</span>
+                <span className="text-xs font-semibold" style={{ color: THEME.textPrimary }}>{config.label}</span>
+                <span className="text-xs font-mono ml-auto" style={{ color: THEME.textMuted }}>{cards.length}</span>
               </div>
 
               {/* Cards */}
               <div className="flex-1 overflow-y-auto p-2 space-y-2">
                 {cards.length === 0 && (
-                  <div className="text-xs text-center py-4" style={{ color: '#5c6280' }}>No prospects</div>
+                  <div className="text-xs text-center py-4" style={{ color: THEME.textMuted }}>No prospects</div>
                 )}
                 {cards.map((c) => {
                   const overdue = isOverdue(c);
@@ -53,11 +54,11 @@ export default function KanbanView({ companies, onSelectCompany }: Props) {
                       onClick={() => onSelectCompany(c.id)}
                       className="px-3 py-2.5 rounded-[6px] cursor-pointer transition-all duration-200"
                       style={{
-                        backgroundColor: '#1a1d2a',
+                        backgroundColor: THEME.elevated,
                         borderLeft: overdue ? '3px solid #f97316' : '3px solid transparent',
                       }}
                     >
-                      <div className="text-sm font-medium" style={{ color: '#e8eaf4' }}>{c.name}</div>
+                      <div className="text-sm font-medium" style={{ color: THEME.textPrimary }}>{c.name}</div>
                       <div className="flex items-center gap-2 mt-1">
                         {c.category_name && (
                           <span className="text-xs px-1.5 py-0.5 rounded" style={{ backgroundColor: (c.category_color || '#6b7280') + '20', color: c.category_color || '#6b7280' }}>

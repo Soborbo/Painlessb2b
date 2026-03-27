@@ -1,6 +1,6 @@
 import { defineMiddleware } from 'astro:middleware';
-import { env } from 'cloudflare:workers';
 import { verifySession } from './lib/auth';
+import { getCfEnv } from './lib/cf-env';
 
 export const onRequest = defineMiddleware(async (context, next) => {
   const { pathname } = context.url;
@@ -15,7 +15,8 @@ export const onRequest = defineMiddleware(async (context, next) => {
     return next();
   }
 
-  const secret = (env as any).SESSION_SECRET as string | undefined;
+  const cfEnv = await getCfEnv();
+  const secret = cfEnv.SESSION_SECRET as string | undefined;
   if (!secret) {
     return new Response(JSON.stringify({ error: 'Server misconfigured' }), {
       status: 500,

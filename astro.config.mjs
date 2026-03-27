@@ -11,11 +11,6 @@ export default defineConfig({
     },
     imageService: 'passthrough',
   }),
-  // Use memory driver to prevent the adapter from adding a KV SESSION binding
-  // (we use our own HMAC cookie auth, not Astro sessions)
-  session: {
-    driver: 'memory',
-  },
   integrations: [react()],
   vite: {
     plugins: [tailwindcss()],

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { STATUS_CONFIG } from '../../lib/constants';
 import { escapeHtml } from '../../lib/utils';
+import { THEME, SITE_CONFIG } from '../../lib/site-config';
 import type { Company, HeatmapMode } from './types';
 
 declare const L: any;
@@ -40,13 +41,13 @@ export default function HeatmapView({ companies, selectedCompanyId, onSelectComp
     if (!mapContainerRef.current || mapRef.current) return;
 
     const map = L.map(mapContainerRef.current, {
-      center: [51.4545, -2.5979],
-      zoom: 12,
+      center: SITE_CONFIG.map.center,
+      zoom: SITE_CONFIG.map.zoom,
       zoomControl: false,
     });
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; OpenStreetMap',
+    L.tileLayer(SITE_CONFIG.mapTileUrl, {
+      attribution: SITE_CONFIG.mapTileAttribution,
       subdomains: 'abcd',
       maxZoom: 19,
     }).addTo(map);
@@ -75,7 +76,7 @@ export default function HeatmapView({ companies, selectedCompanyId, onSelectComp
       iconCreateFunction: (clusterObj: any) => {
         const count = clusterObj.getChildCount();
         return L.divIcon({
-          html: `<div style="background:#1a1d2a;border:2px solid #818cf8;color:#e8eaf4;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;">${count}</div>`,
+          html: `<div style="background:${THEME.elevated};border:2px solid ${THEME.accent};color:${THEME.textPrimary};border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;">${count}</div>`,
           className: '',
           iconSize: [36, 36],
         });
@@ -94,7 +95,7 @@ export default function HeatmapView({ companies, selectedCompanyId, onSelectComp
         radius: selected ? 10 : 6,
         fillColor: statusColor,
         fillOpacity: 0.5,
-        color: selected ? '#e8eaf4' : statusColor,
+        color: selected ? THEME.textPrimary : statusColor,
         weight: selected ? 3 : 1,
         className: overdue ? 'overdue-pulse' : '',
       });
@@ -125,7 +126,7 @@ export default function HeatmapView({ companies, selectedCompanyId, onSelectComp
         maxZoom: 17,
         gradient: heatmapMode === 'activity'
           ? { 0.0: '#10b981', 0.3: '#f59e0b', 0.6: '#f97316', 1.0: '#ef4444' }
-          : { 0.0: '#818cf840', 0.5: '#818cf880', 1.0: '#818cf8' },
+          : { 0.0: `${THEME.accent}40`, 0.5: `${THEME.accent}80`, 1.0: THEME.accent },
       });
       heat.addTo(map);
       heatRef.current = heat;
@@ -137,13 +138,13 @@ export default function HeatmapView({ companies, selectedCompanyId, onSelectComp
       <div ref={mapContainerRef} className="absolute inset-0" />
 
       {/* Mode toggle */}
-      <div className="absolute top-3 left-3 z-[1000] flex rounded-[6px] overflow-hidden" style={{ border: '1px solid #2a2d42' }}>
+      <div className="absolute top-3 left-3 z-[1000] flex rounded-[6px] overflow-hidden" style={{ border: `1px solid ${THEME.border}` }}>
         <button
           onClick={() => heatmapMode !== 'density' && onToggleMode()}
           className="px-3 py-1.5 text-xs font-medium cursor-pointer transition-colors"
           style={{
-            backgroundColor: heatmapMode === 'density' ? '#818cf8' : '#1a1d2a',
-            color: heatmapMode === 'density' ? '#fff' : '#8990b0',
+            backgroundColor: heatmapMode === 'density' ? THEME.accent : THEME.elevated,
+            color: heatmapMode === 'density' ? THEME.accentForeground : THEME.textSecondary,
           }}
         >
           Density
@@ -152,8 +153,8 @@ export default function HeatmapView({ companies, selectedCompanyId, onSelectComp
           onClick={() => heatmapMode !== 'activity' && onToggleMode()}
           className="px-3 py-1.5 text-xs font-medium cursor-pointer transition-colors"
           style={{
-            backgroundColor: heatmapMode === 'activity' ? '#818cf8' : '#1a1d2a',
-            color: heatmapMode === 'activity' ? '#fff' : '#8990b0',
+            backgroundColor: heatmapMode === 'activity' ? THEME.accent : THEME.elevated,
+            color: heatmapMode === 'activity' ? THEME.accentForeground : THEME.textSecondary,
           }}
         >
           Activity
@@ -170,23 +171,23 @@ export default function HeatmapView({ companies, selectedCompanyId, onSelectComp
           100% { opacity: 1; }
         }
         .leaflet-control-zoom a {
-          background-color: #1a1d2a !important;
-          color: #e8eaf4 !important;
-          border-color: #2a2d42 !important;
+          background-color: ${THEME.elevated} !important;
+          color: ${THEME.textPrimary} !important;
+          border-color: ${THEME.border} !important;
         }
         .leaflet-control-zoom a:hover {
-          background-color: #2a2d42 !important;
+          background-color: ${THEME.border} !important;
         }
         .leaflet-tooltip {
-          background-color: #13151e !important;
-          border: 1px solid #2a2d42 !important;
-          color: #e8eaf4 !important;
+          background-color: ${THEME.surface} !important;
+          border: 1px solid ${THEME.border} !important;
+          color: ${THEME.textPrimary} !important;
           border-radius: 6px !important;
           padding: 6px 10px !important;
           box-shadow: 0 4px 12px rgba(0,0,0,0.4) !important;
         }
         .leaflet-tooltip-top:before {
-          border-top-color: #2a2d42 !important;
+          border-top-color: ${THEME.border} !important;
         }
       `}</style>
     </div>

@@ -1,9 +1,10 @@
 import type { APIRoute } from 'astro';
-import { env } from 'cloudflare:workers';
+import { getCfEnv } from '../../lib/cf-env';
 import { generateId } from '../../lib/utils';
+import { SITE_CONFIG } from '../../lib/site-config';
 
 export const POST: APIRoute = async ({ request }) => {
-  const db = (env as any).DB;
+  const { DB: db } = await getCfEnv();
   const prospects = await request.json();
 
   if (!Array.isArray(prospects)) {
@@ -42,7 +43,7 @@ export const POST: APIRoute = async ({ request }) => {
         categoryId = generateId();
         await db.prepare(
           'INSERT INTO categories (id, name, color) VALUES (?, ?, ?)'
-        ).bind(categoryId, p.category, '#6366f1').run();
+        ).bind(categoryId, p.category, SITE_CONFIG.defaultCategoryColor).run();
       }
     }
 

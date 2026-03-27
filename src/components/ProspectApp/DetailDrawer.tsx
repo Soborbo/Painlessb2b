@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { X, Trash2, Copy, ExternalLink, Mail, Phone, ChevronDown } from 'lucide-react';
 import { STATUS_CONFIG, PRIORITY_CONFIG, STATUSES } from '../../lib/constants';
+import { THEME } from '../../lib/site-config';
 import { formatDate, formatRelativeTime } from '../../lib/utils';
 import type { Company, Note, Status, Priority, Category, DrawerMode } from './types';
 import StatusBadge from './StatusBadge';
@@ -85,7 +86,7 @@ function InlineEdit({ value, onSave, placeholder, type = 'text' }: {
           if (e.key === 'Escape') { setDraft(value); setEditing(false); }
         }}
         className="w-full px-2 py-1 rounded text-sm outline-none"
-        style={{ backgroundColor: '#0c0e14', border: '1px solid #818cf8', color: '#e8eaf4' }}
+        style={{ backgroundColor: THEME.base, border: `1px solid ${THEME.accent}`, color: THEME.textPrimary }}
         placeholder={placeholder}
       />
     );
@@ -95,7 +96,7 @@ function InlineEdit({ value, onSave, placeholder, type = 'text' }: {
     <span
       onClick={() => setEditing(true)}
       className="cursor-pointer hover:opacity-80 transition-opacity text-sm block py-0.5"
-      style={{ color: value ? '#e8eaf4' : '#5c6280' }}
+      style={{ color: value ? THEME.textPrimary : THEME.textMuted }}
     >
       {value || placeholder}
     </span>
@@ -200,32 +201,32 @@ export default function DetailDrawer({ company, categories, drawerMode, onClose,
         <div className="fixed inset-0 bg-black/40 z-40" onClick={onClose} />
         <div
           className="fixed top-0 right-0 w-[520px] h-full z-50 overflow-y-auto transition-transform duration-300 ease-out"
-          style={{ backgroundColor: '#13151e', borderLeft: '1px solid #2a2d42', transform: 'translateX(0)' }}
+          style={{ backgroundColor: THEME.surface, borderLeft: `1px solid ${THEME.border}`, transform: 'translateX(0)' }}
         >
           <div className="p-6 space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold" style={{ color: '#e8eaf4' }}>Add Prospect</h2>
-              <button onClick={onClose} className="p-1 cursor-pointer" style={{ color: '#8990b0' }}><X size={20} /></button>
+              <h2 className="text-lg font-semibold" style={{ color: THEME.textPrimary }}>Add Prospect</h2>
+              <button onClick={onClose} className="p-1 cursor-pointer" style={{ color: THEME.textSecondary }}><X size={20} /></button>
             </div>
             {(['name', 'address', 'postcode', 'phone', 'website', 'generic_email', 'contact_name', 'contact_email', 'contact_phone'] as const).map((field) => (
               <div key={field}>
-                <label className="text-xs uppercase tracking-wider mb-1 block" style={{ color: '#5c6280' }}>{field.replace(/_/g, ' ')}</label>
+                <label className="text-xs uppercase tracking-wider mb-1 block" style={{ color: THEME.textMuted }}>{field.replace(/_/g, ' ')}</label>
                 <input
                   type="text"
                   value={(createForm as any)[field] || ''}
                   onChange={(e) => setCreateForm((f) => ({ ...f, [field]: e.target.value }))}
                   className="w-full px-3 py-2 rounded-[6px] text-sm outline-none"
-                  style={{ backgroundColor: '#1a1d2a', border: '1px solid #2a2d42', color: '#e8eaf4' }}
+                  style={{ backgroundColor: THEME.elevated, border: `1px solid ${THEME.border}`, color: THEME.textPrimary }}
                 />
               </div>
             ))}
             <div>
-              <label className="text-xs uppercase tracking-wider mb-1 block" style={{ color: '#5c6280' }}>Category</label>
+              <label className="text-xs uppercase tracking-wider mb-1 block" style={{ color: THEME.textMuted }}>Category</label>
               <select
                 value={createForm.category_id || ''}
                 onChange={(e) => setCreateForm((f) => ({ ...f, category_id: e.target.value }))}
                 className="w-full px-3 py-2 rounded-[6px] text-sm outline-none cursor-pointer"
-                style={{ backgroundColor: '#1a1d2a', border: '1px solid #2a2d42', color: '#e8eaf4' }}
+                style={{ backgroundColor: THEME.elevated, border: `1px solid ${THEME.border}`, color: THEME.textPrimary }}
               >
                 <option value="">Select category</option>
                 {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -233,18 +234,18 @@ export default function DetailDrawer({ company, categories, drawerMode, onClose,
             </div>
             <div className="flex gap-2">
               <div className="flex-1">
-                <label className="text-xs uppercase tracking-wider mb-1 block" style={{ color: '#5c6280' }}>Lat</label>
-                <input type="number" step="any" value={createForm.lat ?? ''} onChange={(e) => setCreateForm((f) => ({ ...f, lat: e.target.value ? parseFloat(e.target.value) : null }))} className="w-full px-3 py-2 rounded-[6px] text-sm outline-none" style={{ backgroundColor: '#1a1d2a', border: '1px solid #2a2d42', color: '#e8eaf4' }} />
+                <label className="text-xs uppercase tracking-wider mb-1 block" style={{ color: THEME.textMuted }}>Lat</label>
+                <input type="number" step="any" value={createForm.lat ?? ''} onChange={(e) => setCreateForm((f) => ({ ...f, lat: e.target.value ? parseFloat(e.target.value) : null }))} className="w-full px-3 py-2 rounded-[6px] text-sm outline-none" style={{ backgroundColor: THEME.elevated, border: `1px solid ${THEME.border}`, color: THEME.textPrimary }} />
               </div>
               <div className="flex-1">
-                <label className="text-xs uppercase tracking-wider mb-1 block" style={{ color: '#5c6280' }}>Lng</label>
-                <input type="number" step="any" value={createForm.lng ?? ''} onChange={(e) => setCreateForm((f) => ({ ...f, lng: e.target.value ? parseFloat(e.target.value) : null }))} className="w-full px-3 py-2 rounded-[6px] text-sm outline-none" style={{ backgroundColor: '#1a1d2a', border: '1px solid #2a2d42', color: '#e8eaf4' }} />
+                <label className="text-xs uppercase tracking-wider mb-1 block" style={{ color: THEME.textMuted }}>Lng</label>
+                <input type="number" step="any" value={createForm.lng ?? ''} onChange={(e) => setCreateForm((f) => ({ ...f, lng: e.target.value ? parseFloat(e.target.value) : null }))} className="w-full px-3 py-2 rounded-[6px] text-sm outline-none" style={{ backgroundColor: THEME.elevated, border: `1px solid ${THEME.border}`, color: THEME.textPrimary }} />
               </div>
             </div>
             <button
               onClick={handleCreate}
               className="w-full py-2.5 rounded-[10px] text-sm font-semibold transition-all duration-200 cursor-pointer"
-              style={{ backgroundColor: '#818cf8', color: '#fff' }}
+              style={{ backgroundColor: THEME.accent, color: THEME.accentForeground }}
             >
               Create Prospect
             </button>
@@ -265,7 +266,7 @@ export default function DetailDrawer({ company, categories, drawerMode, onClose,
       <div className="fixed inset-0 bg-black/40 z-40" onClick={onClose} />
       <div
         className="fixed top-0 right-0 w-[520px] h-full z-50 overflow-y-auto transition-transform duration-300 ease-out"
-        style={{ backgroundColor: '#13151e', borderLeft: '1px solid #2a2d42', transform: 'translateX(0)' }}
+        style={{ backgroundColor: THEME.surface, borderLeft: `1px solid ${THEME.border}`, transform: 'translateX(0)' }}
       >
         <div className="p-6 space-y-6">
           {/* Header */}
@@ -277,13 +278,13 @@ export default function DetailDrawer({ company, categories, drawerMode, onClose,
                 <div className="relative">
                   <StatusBadge status={company.status} onClick={() => setShowStatusMenu(!showStatusMenu)} />
                   {showStatusMenu && (
-                    <div className="absolute top-full left-0 mt-1 rounded-[6px] py-1 z-10 min-w-[160px]" style={{ backgroundColor: '#1a1d2a', border: '1px solid #2a2d42' }}>
+                    <div className="absolute top-full left-0 mt-1 rounded-[6px] py-1 z-10 min-w-[160px]" style={{ backgroundColor: THEME.elevated, border: `1px solid ${THEME.border}` }}>
                       {STATUSES.map((s) => (
                         <button
                           key={s}
                           onClick={() => handleStatusChange(s)}
                           className="w-full text-left px-3 py-1.5 text-sm flex items-center gap-2 cursor-pointer transition-colors"
-                          style={{ color: '#e8eaf4' }}
+                          style={{ color: THEME.textPrimary }}
                         >
                           <span className="w-2 h-2 rounded-full" style={{ backgroundColor: STATUS_CONFIG[s].color }} />
                           {STATUS_CONFIG[s].label}
@@ -298,7 +299,7 @@ export default function DetailDrawer({ company, categories, drawerMode, onClose,
                   value={company.priority}
                   onChange={(e) => onUpdate(company.id, { priority: e.target.value as Priority })}
                   className="text-xs px-2 py-1 rounded outline-none cursor-pointer"
-                  style={{ backgroundColor: '#1a1d2a', border: '1px solid #2a2d42', color: '#e8eaf4' }}
+                  style={{ backgroundColor: THEME.elevated, border: `1px solid ${THEME.border}`, color: THEME.textPrimary }}
                 >
                   <option value="high">High</option>
                   <option value="medium">Medium</option>
@@ -317,60 +318,60 @@ export default function DetailDrawer({ company, categories, drawerMode, onClose,
                   }
                 }}
                 className="p-2 rounded-[6px] cursor-pointer transition-colors"
-                style={{ color: confirmDeleteCompany ? '#ef4444' : '#8990b0' }}
+                style={{ color: confirmDeleteCompany ? '#ef4444' : THEME.textSecondary }}
                 title={confirmDeleteCompany ? 'Click again to confirm delete' : 'Delete company'}
               >
                 <Trash2 size={18} />
               </button>
-              <button onClick={onClose} className="p-2 cursor-pointer" style={{ color: '#8990b0' }}><X size={20} /></button>
+              <button onClick={onClose} className="p-2 cursor-pointer" style={{ color: THEME.textSecondary }}><X size={20} /></button>
             </div>
           </div>
 
           {/* Contact info */}
           <div className="space-y-2">
-            <h3 className="text-xs font-semibold uppercase tracking-wider" style={{ color: '#5c6280' }}>Contact</h3>
+            <h3 className="text-xs font-semibold uppercase tracking-wider" style={{ color: THEME.textMuted }}>Contact</h3>
             <div className="grid grid-cols-[100px_1fr] gap-y-1.5 gap-x-2 text-sm">
-              <span style={{ color: '#5c6280' }}>Name</span>
+              <span style={{ color: THEME.textMuted }}>Name</span>
               <InlineEdit value={company.contact_name || ''} onSave={(v) => handleFieldUpdate('contact_name', v)} placeholder="—" />
 
-              <span style={{ color: '#5c6280' }}>Email</span>
+              <span style={{ color: THEME.textMuted }}>Email</span>
               <div className="flex items-center gap-1">
                 <InlineEdit value={company.contact_email || ''} onSave={(v) => handleFieldUpdate('contact_email', v)} placeholder="—" />
                 {company.contact_email && (
                   <>
-                    <a href={`mailto:${company.contact_email}`} style={{ color: '#818cf8' }}><Mail size={12} /></a>
-                    <button onClick={() => handleCopyEmail(company.contact_email!)} className="cursor-pointer" style={{ color: '#818cf8' }}><Copy size={12} /></button>
+                    <a href={`mailto:${company.contact_email}`} style={{ color: THEME.accent }}><Mail size={12} /></a>
+                    <button onClick={() => handleCopyEmail(company.contact_email!)} className="cursor-pointer" style={{ color: THEME.accent }}><Copy size={12} /></button>
                   </>
                 )}
               </div>
 
-              <span style={{ color: '#5c6280' }}>Phone</span>
+              <span style={{ color: THEME.textMuted }}>Phone</span>
               <div className="flex items-center gap-1">
                 <InlineEdit value={company.contact_phone || ''} onSave={(v) => handleFieldUpdate('contact_phone', v)} placeholder="—" />
-                {company.contact_phone && <a href={`tel:${company.contact_phone}`} style={{ color: '#818cf8' }}><Phone size={12} /></a>}
+                {company.contact_phone && <a href={`tel:${company.contact_phone}`} style={{ color: THEME.accent }}><Phone size={12} /></a>}
               </div>
 
-              <span style={{ color: '#5c6280' }}>Company Ph</span>
+              <span style={{ color: THEME.textMuted }}>Company Ph</span>
               <InlineEdit value={company.phone || ''} onSave={(v) => handleFieldUpdate('phone', v)} placeholder="—" />
 
-              <span style={{ color: '#5c6280' }}>Gen. Email</span>
+              <span style={{ color: THEME.textMuted }}>Gen. Email</span>
               <div className="flex items-center gap-1">
                 <InlineEdit value={company.generic_email || ''} onSave={(v) => handleFieldUpdate('generic_email', v)} placeholder="—" />
                 {company.generic_email && (
-                  <button onClick={() => handleCopyEmail(company.generic_email!)} className="cursor-pointer" style={{ color: '#818cf8' }}><Copy size={12} /></button>
+                  <button onClick={() => handleCopyEmail(company.generic_email!)} className="cursor-pointer" style={{ color: THEME.accent }}><Copy size={12} /></button>
                 )}
               </div>
 
-              <span style={{ color: '#5c6280' }}>Website</span>
+              <span style={{ color: THEME.textMuted }}>Website</span>
               <div className="flex items-center gap-1">
                 <InlineEdit value={company.website || ''} onSave={(v) => handleFieldUpdate('website', v)} placeholder="—" />
-                {company.website && <a href={company.website} target="_blank" rel="noopener noreferrer" style={{ color: '#818cf8' }}><ExternalLink size={12} /></a>}
+                {company.website && <a href={company.website} target="_blank" rel="noopener noreferrer" style={{ color: THEME.accent }}><ExternalLink size={12} /></a>}
               </div>
 
-              <span style={{ color: '#5c6280' }}>Address</span>
+              <span style={{ color: THEME.textMuted }}>Address</span>
               <InlineEdit value={company.address || ''} onSave={(v) => handleFieldUpdate('address', v)} placeholder="—" />
 
-              <span style={{ color: '#5c6280' }}>Postcode</span>
+              <span style={{ color: THEME.textMuted }}>Postcode</span>
               <InlineEdit value={company.postcode || ''} onSave={(v) => handleFieldUpdate('postcode', v)} placeholder="—" />
             </div>
           </div>
@@ -380,7 +381,7 @@ export default function DetailDrawer({ company, categories, drawerMode, onClose,
             <button
               onClick={onOpenEmail}
               className="w-full flex items-center justify-center gap-2 py-2 rounded-[6px] text-sm font-medium transition-all duration-200 cursor-pointer"
-              style={{ backgroundColor: '#1a1d2a', border: '1px solid #2a2d42', color: '#818cf8' }}
+              style={{ backgroundColor: THEME.elevated, border: `1px solid ${THEME.border}`, color: THEME.accent }}
             >
               <Mail size={16} />
               Send Intro Email
@@ -390,7 +391,7 @@ export default function DetailDrawer({ company, categories, drawerMode, onClose,
           {/* Quick actions */}
           {quickActions.length > 0 && (
             <div className="space-y-2">
-              <h3 className="text-xs font-semibold uppercase tracking-wider" style={{ color: '#5c6280' }}>Quick Actions</h3>
+              <h3 className="text-xs font-semibold uppercase tracking-wider" style={{ color: THEME.textMuted }}>Quick Actions</h3>
               <div className="flex flex-wrap gap-2">
                 {quickActions.map((action) => (
                   <button
@@ -412,7 +413,7 @@ export default function DetailDrawer({ company, categories, drawerMode, onClose,
 
           {/* Follow-up */}
           <div className="space-y-2">
-            <h3 className="text-xs font-semibold uppercase tracking-wider" style={{ color: '#5c6280' }}>Follow-up</h3>
+            <h3 className="text-xs font-semibold uppercase tracking-wider" style={{ color: THEME.textMuted }}>Follow-up</h3>
             <FollowUpPicker
               currentDate={company.follow_up_date}
               onChange={handleFollowUpChange}
@@ -421,47 +422,47 @@ export default function DetailDrawer({ company, categories, drawerMode, onClose,
 
           {/* Details */}
           <div className="space-y-2">
-            <h3 className="text-xs font-semibold uppercase tracking-wider" style={{ color: '#5c6280' }}>Details</h3>
+            <h3 className="text-xs font-semibold uppercase tracking-wider" style={{ color: THEME.textMuted }}>Details</h3>
             <div className="grid grid-cols-[100px_1fr] gap-y-1.5 gap-x-2 text-sm">
-              <span style={{ color: '#5c6280' }}>Category</span>
+              <span style={{ color: THEME.textMuted }}>Category</span>
               <select
                 value={company.category_id || ''}
                 onChange={(e) => onUpdate(company.id, { category_id: e.target.value })}
                 className="text-sm px-2 py-0.5 rounded outline-none cursor-pointer"
-                style={{ backgroundColor: '#1a1d2a', border: '1px solid #2a2d42', color: '#e8eaf4' }}
+                style={{ backgroundColor: THEME.elevated, border: `1px solid ${THEME.border}`, color: THEME.textPrimary }}
               >
                 <option value="">None</option>
                 {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
 
-              <span style={{ color: '#5c6280' }}>Source</span>
-              <span style={{ color: '#e8eaf4' }}>{company.source || '—'}</span>
+              <span style={{ color: THEME.textMuted }}>Source</span>
+              <span style={{ color: THEME.textPrimary }}>{company.source || '—'}</span>
 
               {company.source_url && (
                 <>
-                  <span style={{ color: '#5c6280' }}>Source URL</span>
-                  <a href={company.source_url} target="_blank" rel="noopener noreferrer" className="text-sm truncate" style={{ color: '#818cf8' }}>{company.source_url}</a>
+                  <span style={{ color: THEME.textMuted }}>Source URL</span>
+                  <a href={company.source_url} target="_blank" rel="noopener noreferrer" className="text-sm truncate" style={{ color: THEME.accent }}>{company.source_url}</a>
                 </>
               )}
 
               {company.google_place_id && (
                 <>
-                  <span style={{ color: '#5c6280' }}>Place ID</span>
-                  <span className="text-xs font-mono truncate" style={{ color: '#8990b0' }}>{company.google_place_id}</span>
+                  <span style={{ color: THEME.textMuted }}>Place ID</span>
+                  <span className="text-xs font-mono truncate" style={{ color: THEME.textSecondary }}>{company.google_place_id}</span>
                 </>
               )}
 
-              <span style={{ color: '#5c6280' }}>Created</span>
-              <span style={{ color: '#8990b0' }}>{formatDate(company.created_at)}</span>
+              <span style={{ color: THEME.textMuted }}>Created</span>
+              <span style={{ color: THEME.textSecondary }}>{formatDate(company.created_at)}</span>
 
-              <span style={{ color: '#5c6280' }}>Updated</span>
-              <span style={{ color: '#8990b0' }}>{formatRelativeTime(company.updated_at)}</span>
+              <span style={{ color: THEME.textMuted }}>Updated</span>
+              <span style={{ color: THEME.textSecondary }}>{formatRelativeTime(company.updated_at)}</span>
             </div>
           </div>
 
           {/* Notes */}
           <div className="space-y-2">
-            <h3 className="text-xs font-semibold uppercase tracking-wider" style={{ color: '#5c6280' }}>Notes</h3>
+            <h3 className="text-xs font-semibold uppercase tracking-wider" style={{ color: THEME.textMuted }}>Notes</h3>
             <NoteTimeline
               notes={notes}
               companyId={company.id}

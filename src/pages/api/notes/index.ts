@@ -1,9 +1,9 @@
 import type { APIRoute } from 'astro';
-import { env } from 'cloudflare:workers';
+import { getCfEnv } from '../../../lib/cf-env';
 import { generateId } from '../../../lib/utils';
 
 export const POST: APIRoute = async ({ request }) => {
-  const db = (env as any).DB;
+  const { DB: db } = await getCfEnv();
   const body = await request.json();
   const id = generateId();
 

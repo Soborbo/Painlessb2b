@@ -1,10 +1,10 @@
 import type { APIRoute } from 'astro';
-import { env } from 'cloudflare:workers';
+import { getCfEnv } from '../../../lib/cf-env';
 import { Resend } from 'resend';
 import { generateId } from '../../../lib/utils';
 
 export const POST: APIRoute = async ({ request }) => {
-  const db = (env as any).DB;
+  const { DB: db } = await getCfEnv();
   const body = await request.json();
   const { company_id, to_email, subject, body: emailBody } = body;
 
@@ -31,9 +31,9 @@ export const POST: APIRoute = async ({ request }) => {
     });
   }
 
-  const apiKey = ((env as any).RESEND_API_KEY as string) ?? '';
-  const senderEmail = ((env as any).SENDER_EMAIL as string) ?? 'noreply@example.com';
-  const senderName = ((env as any).SENDER_NAME as string) ?? 'Prospect Tracker';
+  const apiKey = ((await getCfEnv()).RESEND_API_KEY as string) ?? '';
+  const senderEmail = ((await getCfEnv()).SENDER_EMAIL as string) ?? 'noreply@example.com';
+  const senderName = ((await getCfEnv()).SENDER_NAME as string) ?? 'Prospect Tracker';
 
   let emailStatus: 'sent' | 'failed' = 'sent';
   let error: string | null = null;

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { X, Plus, Pencil, Trash2 } from 'lucide-react';
 import type { Category } from './types';
+import { THEME, SITE_CONFIG } from '../../lib/site-config';
 
 interface Props {
   categories: Category[];
@@ -13,7 +14,7 @@ interface Props {
 
 export default function CategoryManager({ categories, open, onClose, onAdd, onUpdate, onDelete }: Props) {
   const [name, setName] = useState('');
-  const [color, setColor] = useState('#6366f1');
+  const [color, setColor] = useState(SITE_CONFIG.defaultCategoryColor);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
   const [editColor, setEditColor] = useState('');
@@ -24,7 +25,7 @@ export default function CategoryManager({ categories, open, onClose, onAdd, onUp
     if (!name.trim()) return;
     onAdd(name.trim(), color);
     setName('');
-    setColor('#6366f1');
+    setColor(SITE_CONFIG.defaultCategoryColor);
   };
 
   const startEdit = (cat: Category) => {
@@ -44,11 +45,11 @@ export default function CategoryManager({ categories, open, onClose, onAdd, onUp
       <div className="absolute inset-0 bg-black/60" onClick={onClose} />
       <div
         className="relative w-full max-w-md rounded-[14px] p-6"
-        style={{ backgroundColor: '#13151e', border: '1px solid #2a2d42' }}
+        style={{ backgroundColor: THEME.surface, border: `1px solid ${THEME.border}` }}
       >
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-semibold" style={{ color: '#e8eaf4' }}>Manage Categories</h2>
-          <button onClick={onClose} className="p-1 cursor-pointer" style={{ color: '#8990b0' }}>
+          <h2 className="text-lg font-semibold" style={{ color: THEME.textPrimary }}>Manage Categories</h2>
+          <button onClick={onClose} className="p-1 cursor-pointer" style={{ color: THEME.textSecondary }}>
             <X size={20} />
           </button>
         </div>
@@ -61,7 +62,7 @@ export default function CategoryManager({ categories, open, onClose, onAdd, onUp
             onChange={(e) => setName(e.target.value)}
             placeholder="Category name"
             className="flex-1 px-3 py-2 rounded-[6px] text-sm outline-none"
-            style={{ backgroundColor: '#1a1d2a', border: '1px solid #2a2d42', color: '#e8eaf4' }}
+            style={{ backgroundColor: THEME.elevated, border: `1px solid ${THEME.border}`, color: THEME.textPrimary }}
             onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
           />
           <input
@@ -69,12 +70,12 @@ export default function CategoryManager({ categories, open, onClose, onAdd, onUp
             value={color}
             onChange={(e) => setColor(e.target.value)}
             className="w-10 h-10 rounded-[6px] cursor-pointer border-0 p-0"
-            style={{ backgroundColor: '#1a1d2a' }}
+            style={{ backgroundColor: THEME.elevated }}
           />
           <button
             onClick={handleAdd}
             className="p-2 rounded-[6px] cursor-pointer"
-            style={{ backgroundColor: '#818cf8', color: '#fff' }}
+            style={{ backgroundColor: THEME.accent, color: THEME.accentForeground }}
           >
             <Plus size={18} />
           </button>
@@ -86,7 +87,7 @@ export default function CategoryManager({ categories, open, onClose, onAdd, onUp
             <div
               key={cat.id}
               className="flex items-center gap-2 px-3 py-2 rounded-[6px]"
-              style={{ backgroundColor: '#1a1d2a' }}
+              style={{ backgroundColor: THEME.elevated }}
             >
               {editingId === cat.id ? (
                 <>
@@ -95,7 +96,7 @@ export default function CategoryManager({ categories, open, onClose, onAdd, onUp
                     value={editName}
                     onChange={(e) => setEditName(e.target.value)}
                     className="flex-1 px-2 py-1 rounded text-sm outline-none"
-                    style={{ backgroundColor: '#0c0e14', border: '1px solid #2a2d42', color: '#e8eaf4' }}
+                    style={{ backgroundColor: THEME.base, border: `1px solid ${THEME.border}`, color: THEME.textPrimary }}
                     onKeyDown={(e) => e.key === 'Enter' && saveEdit()}
                     autoFocus
                   />
@@ -105,19 +106,19 @@ export default function CategoryManager({ categories, open, onClose, onAdd, onUp
                     onChange={(e) => setEditColor(e.target.value)}
                     className="w-8 h-8 rounded cursor-pointer border-0 p-0"
                   />
-                  <button onClick={saveEdit} className="text-xs px-2 py-1 rounded cursor-pointer" style={{ backgroundColor: '#818cf8', color: '#fff' }}>
+                  <button onClick={saveEdit} className="text-xs px-2 py-1 rounded cursor-pointer" style={{ backgroundColor: THEME.accent, color: THEME.accentForeground }}>
                     Save
                   </button>
-                  <button onClick={() => setEditingId(null)} className="text-xs px-2 py-1 rounded cursor-pointer" style={{ color: '#8990b0' }}>
+                  <button onClick={() => setEditingId(null)} className="text-xs px-2 py-1 rounded cursor-pointer" style={{ color: THEME.textSecondary }}>
                     Cancel
                   </button>
                 </>
               ) : (
                 <>
                   <span className="w-3 h-3 rounded-[2px]" style={{ backgroundColor: cat.color }} />
-                  <span className="flex-1 text-sm" style={{ color: '#e8eaf4' }}>{cat.name}</span>
-                  <span className="text-xs font-mono" style={{ color: '#5c6280' }}>{cat.company_count ?? 0}</span>
-                  <button onClick={() => startEdit(cat)} className="p-1 cursor-pointer" style={{ color: '#8990b0' }}>
+                  <span className="flex-1 text-sm" style={{ color: THEME.textPrimary }}>{cat.name}</span>
+                  <span className="text-xs font-mono" style={{ color: THEME.textMuted }}>{cat.company_count ?? 0}</span>
+                  <button onClick={() => startEdit(cat)} className="p-1 cursor-pointer" style={{ color: THEME.textSecondary }}>
                     <Pencil size={14} />
                   </button>
                   <button onClick={() => onDelete(cat.id)} className="p-1 cursor-pointer" style={{ color: '#ef4444' }}>
