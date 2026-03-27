@@ -137,7 +137,7 @@ export default function ListView({ companies, totalCount, onSelectCompany }: Pro
                   onClick={() => onSelectCompany(c.id)}
                   className="cursor-pointer transition-colors duration-150"
                   style={{
-                    backgroundColor: i % 2 === 0 ? 'transparent' : '#0f1119',
+                    backgroundColor: i % 2 === 0 ? 'transparent' : THEME.elevated,
                   }}
                 >
                   <td className="px-2 py-2.5">
