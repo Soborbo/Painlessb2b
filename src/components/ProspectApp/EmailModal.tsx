@@ -79,7 +79,7 @@ export default function EmailModal({ company, open, onClose, onSent, onToast }: 
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center" data-modal-overlay>
       <div className="absolute inset-0 bg-black/60" onClick={onClose} />
       <div
         className="relative w-full max-w-lg rounded-[14px] p-6 max-h-[90vh] overflow-y-auto"

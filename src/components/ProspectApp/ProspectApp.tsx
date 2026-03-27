@@ -114,6 +114,8 @@ function reducer(state: AppState, action: Action): AppState {
       return { ...state, emailModalOpen: action.payload };
     case 'SET_SORT':
       return { ...state, sortBy: action.payload.by, sortDir: action.payload.dir };
+    case 'TOGGLE_SORT':
+      return { ...state, sortBy: action.payload, sortDir: state.sortBy === action.payload && state.sortDir === 'desc' ? 'asc' : 'desc' };
     case 'SET_OVERDUE_COUNT':
       return { ...state, overdueCount: action.payload };
     case 'SET_TOAST':
@@ -283,20 +285,21 @@ export default function ProspectApp() {
 
   const handleDeleteCompany = useCallback(async (id: string) => {
     try {
-      await fetch(`/api/companies/${id}`, { method: 'DELETE' });
-      dispatch({ type: 'REMOVE_COMPANY', payload: id });
-      dispatch({ type: 'SET_TOAST', payload: { message: 'Prospect deleted', type: 'success' } });
+      const res = await fetch(`/api/companies/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        dispatch({ type: 'REMOVE_COMPANY', payload: id });
+        dispatch({ type: 'SET_TOAST', payload: { message: 'Prospect deleted', type: 'success' } });
+      } else {
+        dispatch({ type: 'SET_TOAST', payload: { message: 'Failed to delete', type: 'error' } });
+      }
     } catch {
       dispatch({ type: 'SET_TOAST', payload: { message: 'Failed to delete', type: 'error' } });
     }
   }, []);
 
   const handleSortChange = useCallback((by: SortBy) => {
-    dispatch({
-      type: 'SET_SORT',
-      payload: { by, dir: state.sortBy === by && state.sortDir === 'desc' ? 'asc' : 'desc' },
-    });
-  }, [state.sortBy, state.sortDir]);
+    dispatch({ type: 'TOGGLE_SORT', payload: by });
+  }, []);
 
   return (
     <div className="h-screen flex flex-col" style={{ backgroundColor: THEME.base }}>
@@ -431,19 +434,16 @@ export default function ProspectApp() {
       />
 
       {state.emailModalOpen && state.selectedCompanyId && (() => {
-        const selectedCompany = state.companies.find((c) => c.id === state.selectedCompanyId);
-        if (!selectedCompany) return null;
-        return (
+        const sc = state.companies.find((c) => c.id === state.selectedCompanyId);
+        return sc ? (
           <EmailModal
-            company={selectedCompany}
+            company={sc}
             open={state.emailModalOpen}
             onClose={() => dispatch({ type: 'SET_EMAIL_MODAL', payload: false })}
-            onSent={() => {
-              fetchData();
-            }}
+            onSent={fetchData}
             onToast={(msg, type) => dispatch({ type: 'SET_TOAST', payload: { message: msg, type } })}
           />
-        );
+        ) : null;
       })()}
     </div>
   );

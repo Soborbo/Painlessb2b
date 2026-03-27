@@ -115,6 +115,7 @@ export type Action =
   | { type: 'SET_DRAWER_MODE'; payload: DrawerMode }
   | { type: 'SET_EMAIL_MODAL'; payload: boolean }
   | { type: 'SET_SORT'; payload: { by: SortBy; dir: 'asc' | 'desc' } }
+  | { type: 'TOGGLE_SORT'; payload: SortBy }
   | { type: 'SET_OVERDUE_COUNT'; payload: number }
   | { type: 'SET_TOAST'; payload: ToastData | null }
   | { type: 'SET_CATEGORY_MANAGER'; payload: boolean };

@@ -108,10 +108,10 @@ export default function HeatmapView({ companies, selectedCompanyId, onSelectComp
       marker.on('click', () => onSelectCompany(c.id));
       cluster.addLayer(marker);
 
-      // Heat point
+      // Heat point — lat/lng are guaranteed non-null by the mappable filter above
       const weight = heatmapMode === 'density' ? 1.0 : (STATUS_WEIGHTS[c.status] ?? 0);
-      if (weight > 0) {
-        heatPoints.push([c.lat!, c.lng!, weight]);
+      if (weight > 0 && c.lat != null && c.lng != null) {
+        heatPoints.push([c.lat, c.lng, weight]);
       }
     }
 

@@ -4,8 +4,17 @@ import { Resend } from 'resend';
 import { generateId } from '../../../lib/utils';
 
 export const POST: APIRoute = async ({ request }) => {
-  const { DB: db } = await getCfEnv();
-  const body = await request.json();
+  const cfEnv = await getCfEnv();
+  const { DB: db } = cfEnv;
+  let body: any;
+  try {
+    body = await request.json();
+  } catch {
+    return new Response(JSON.stringify({ error: 'Invalid JSON body' }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
   const { company_id, to_email, subject, body: emailBody } = body;
 
   if (!to_email || !subject || !emailBody) {
@@ -31,9 +40,16 @@ export const POST: APIRoute = async ({ request }) => {
     });
   }
 
-  const apiKey = ((await getCfEnv()).RESEND_API_KEY as string) ?? '';
-  const senderEmail = ((await getCfEnv()).SENDER_EMAIL as string) ?? 'noreply@example.com';
-  const senderName = ((await getCfEnv()).SENDER_NAME as string) ?? 'Prospect Tracker';
+  const apiKey = (cfEnv.RESEND_API_KEY as string) ?? '';
+  const senderEmail = (cfEnv.SENDER_EMAIL as string) ?? 'noreply@example.com';
+  const senderName = (cfEnv.SENDER_NAME as string) ?? 'Prospect Tracker';
+
+  if (!apiKey) {
+    return new Response(JSON.stringify({ error: 'Email service not configured' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
 
   let emailStatus: 'sent' | 'failed' = 'sent';
   let error: string | null = null;

@@ -125,11 +125,16 @@ export default function Sidebar({ state, dispatch, filteredCompanies }: Props) {
 
       {/* Toggles */}
       <div className="space-y-2">
-        <label className="flex items-center gap-2 cursor-pointer">
+        <button
+          type="button"
+          role="switch"
+          aria-checked={state.filters.hasEmail}
+          onClick={() => dispatch({ type: 'TOGGLE_HAS_EMAIL' })}
+          className="flex items-center gap-2 cursor-pointer w-full text-left"
+        >
           <div
-            className="w-8 h-4 rounded-full relative transition-all duration-200 cursor-pointer"
+            className="w-8 h-4 rounded-full relative transition-all duration-200 flex-shrink-0"
             style={{ backgroundColor: state.filters.hasEmail ? THEME.accent : THEME.border }}
-            onClick={() => dispatch({ type: 'TOGGLE_HAS_EMAIL' })}
           >
             <div
               className="w-3 h-3 rounded-full bg-white absolute top-0.5 transition-all duration-200"
@@ -137,13 +142,18 @@ export default function Sidebar({ state, dispatch, filteredCompanies }: Props) {
             />
           </div>
           <span className="text-sm" style={{ color: THEME.textPrimary }}>Has email</span>
-        </label>
+        </button>
 
-        <label className="flex items-center gap-2 cursor-pointer">
+        <button
+          type="button"
+          role="switch"
+          aria-checked={state.filters.hasContact}
+          onClick={() => dispatch({ type: 'TOGGLE_HAS_CONTACT' })}
+          className="flex items-center gap-2 cursor-pointer w-full text-left"
+        >
           <div
-            className="w-8 h-4 rounded-full relative transition-all duration-200 cursor-pointer"
+            className="w-8 h-4 rounded-full relative transition-all duration-200 flex-shrink-0"
             style={{ backgroundColor: state.filters.hasContact ? THEME.accent : THEME.border }}
-            onClick={() => dispatch({ type: 'TOGGLE_HAS_CONTACT' })}
           >
             <div
               className="w-3 h-3 rounded-full bg-white absolute top-0.5 transition-all duration-200"
@@ -151,13 +161,18 @@ export default function Sidebar({ state, dispatch, filteredCompanies }: Props) {
             />
           </div>
           <span className="text-sm" style={{ color: THEME.textPrimary }}>Has contact</span>
-        </label>
+        </button>
 
-        <label className="flex items-center gap-2 cursor-pointer">
+        <button
+          type="button"
+          role="switch"
+          aria-checked={state.filters.overdueOnly}
+          onClick={() => dispatch({ type: 'TOGGLE_OVERDUE_ONLY' })}
+          className="flex items-center gap-2 cursor-pointer w-full text-left"
+        >
           <div
-            className="w-8 h-4 rounded-full relative transition-all duration-200 cursor-pointer"
+            className="w-8 h-4 rounded-full relative transition-all duration-200 flex-shrink-0"
             style={{ backgroundColor: state.filters.overdueOnly ? '#f97316' : THEME.border }}
-            onClick={() => dispatch({ type: 'TOGGLE_OVERDUE_ONLY' })}
           >
             <div
               className="w-3 h-3 rounded-full bg-white absolute top-0.5 transition-all duration-200"
@@ -165,7 +180,7 @@ export default function Sidebar({ state, dispatch, filteredCompanies }: Props) {
             />
           </div>
           <span className="text-sm" style={{ color: THEME.textPrimary }}>Overdue follow-up</span>
-        </label>
+        </button>
       </div>
 
       {/* Clear filters */}

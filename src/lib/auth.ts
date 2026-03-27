@@ -27,7 +27,8 @@ export async function createSessionCookie(secret: string): Promise<string> {
   const payload = `admin:${expires}`;
   const sig = await hmacSign(payload, secret);
   const token = btoa(`${payload}:${sig}`);
-  return `${COOKIE_NAME}=${token}; HttpOnly; Path=/; Max-Age=${COOKIE_MAX_AGE}; SameSite=Lax`;
+  const secure = typeof globalThis !== 'undefined' && typeof (globalThis as any).caches !== 'undefined' ? '; Secure' : '';
+  return `${COOKIE_NAME}=${token}; HttpOnly; Path=/; Max-Age=${COOKIE_MAX_AGE}; SameSite=Lax${secure}`;
 }
 
 export async function verifySession(cookieHeader: string | null, secret: string): Promise<boolean> {

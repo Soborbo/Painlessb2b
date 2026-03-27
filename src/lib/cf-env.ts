@@ -1,13 +1,9 @@
 /**
  * Helper to access Cloudflare Workers env bindings.
  * Uses dynamic import to avoid top-level import issues with miniflare on Windows.
+ * Note: env is fetched fresh each time to avoid stale DB connections across requests.
  */
-let _env: Record<string, any> | null = null;
-
 export async function getCfEnv(): Promise<Record<string, any>> {
-  if (!_env) {
-    const mod = await import('cloudflare:workers');
-    _env = mod.env as any;
-  }
-  return _env;
+  const mod = await import('cloudflare:workers');
+  return mod.env as any;
 }

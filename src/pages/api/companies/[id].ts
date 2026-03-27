@@ -4,7 +4,15 @@ import { getCfEnv } from '../../../lib/cf-env';
 export const PUT: APIRoute = async ({ params, request }) => {
   const { DB: db } = await getCfEnv();
   const { id } = params;
-  const body = await request.json();
+  let body: any;
+  try {
+    body = await request.json();
+  } catch {
+    return new Response(JSON.stringify({ error: 'Invalid JSON body' }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
   const now = new Date().toISOString();
 
   const fields: string[] = [];
@@ -62,8 +70,9 @@ export const DELETE: APIRoute = async ({ params }) => {
   const { DB: db } = await getCfEnv();
   const { id } = params;
 
-  // Foreign keys with ON DELETE CASCADE handle notes and email_log
-  await db.prepare('PRAGMA foreign_keys = ON').run();
+  // Manually delete related records since D1 PRAGMA foreign_keys may not persist across statements
+  await db.prepare('DELETE FROM notes WHERE company_id = ?').bind(id).run();
+  await db.prepare('DELETE FROM email_log WHERE company_id = ?').bind(id).run();
   await db.prepare('DELETE FROM companies WHERE id = ?').bind(id).run();
 
   return new Response(JSON.stringify({ ok: true }), {

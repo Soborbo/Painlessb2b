@@ -82,7 +82,7 @@ function InlineEdit({ value, onSave, placeholder, type = 'text' }: {
         onChange={(e) => setDraft(e.target.value)}
         onBlur={save}
         onKeyDown={(e) => {
-          if (e.key === 'Enter') save();
+          if (e.key === 'Enter') { e.preventDefault(); save(); }
           if (e.key === 'Escape') { setDraft(value); setEditing(false); }
         }}
         className="w-full px-2 py-1 rounded text-sm outline-none"
@@ -111,6 +111,16 @@ export default function DetailDrawer({ company, categories, drawerMode, onClose,
   const [createForm, setCreateForm] = useState<Partial<Company>>({ status: 'new', priority: 'medium' });
   const isOpen = company !== null || drawerMode === 'create';
 
+  // Reset transient state when drawer opens for a different company or mode
+  useEffect(() => {
+    setConfirmDeleteCompany(false);
+    setShowStatusMenu(false);
+    setShowFollowUp(false);
+    if (drawerMode === 'create') {
+      setCreateForm({ status: 'new', priority: 'medium' });
+    }
+  }, [company?.id, drawerMode]);
+
   // Fetch notes
   useEffect(() => {
     if (!company || drawerMode === 'create') { setNotes([]); return; }
@@ -122,10 +132,15 @@ export default function DetailDrawer({ company, categories, drawerMode, onClose,
     return () => { cancelled = true; };
   }, [company?.id, drawerMode]);
 
-  // Escape key
+  // Escape key — only close if no modal is layered on top
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') {
+        // Don't close drawer if a modal (email, etc.) is open on top
+        const modal = document.querySelector('[data-modal-overlay]');
+        if (modal) return;
+        onClose();
+      }
     };
     if (isOpen) window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
@@ -179,8 +194,9 @@ export default function DetailDrawer({ company, categories, drawerMode, onClose,
   }, [company, onUpdate]);
 
   const handleCopyEmail = useCallback((email: string) => {
-    navigator.clipboard.writeText(email);
-    onToast('Copied', 'success');
+    navigator.clipboard.writeText(email)
+      .then(() => onToast('Copied', 'success'))
+      .catch(() => onToast('Failed to copy', 'error'));
   }, [onToast]);
 
   const handleCreate = useCallback(async () => {

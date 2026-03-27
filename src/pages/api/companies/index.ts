@@ -50,7 +50,7 @@ export const GET: APIRoute = async ({ request }) => {
   }
 
   if (hasEmail === 'true') {
-    conditions.push(`(c.contact_email IS NOT NULL AND c.contact_email != '' OR c.generic_email IS NOT NULL AND c.generic_email != '')`);
+    conditions.push(`((c.contact_email IS NOT NULL AND c.contact_email != '') OR (c.generic_email IS NOT NULL AND c.generic_email != ''))`);
   }
 
   if (hasContact === 'true') {
@@ -75,7 +75,21 @@ export const GET: APIRoute = async ({ request }) => {
 
 export const POST: APIRoute = async ({ request }) => {
   const { DB: db } = await getCfEnv();
-  const body = await request.json();
+  let body: any;
+  try {
+    body = await request.json();
+  } catch {
+    return new Response(JSON.stringify({ error: 'Invalid JSON body' }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+  if (!body.name) {
+    return new Response(JSON.stringify({ error: 'Company name is required' }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
   const id = generateId();
   const now = new Date().toISOString();
 
@@ -88,8 +102,8 @@ export const POST: APIRoute = async ({ request }) => {
     body.category_id || null,
     body.address || null,
     body.postcode || null,
-    body.lat || null,
-    body.lng || null,
+    body.lat ?? null,
+    body.lng ?? null,
     body.phone || null,
     body.website || null,
     body.generic_email || null,
@@ -106,7 +120,12 @@ export const POST: APIRoute = async ({ request }) => {
     now
   ).run();
 
-  const company = await db.prepare('SELECT * FROM companies WHERE id = ?').bind(id).first();
+  const company = await db.prepare(`
+    SELECT c.*, cat.name as category_name, cat.color as category_color
+    FROM companies c
+    LEFT JOIN categories cat ON c.category_id = cat.id
+    WHERE c.id = ?
+  `).bind(id).first();
   return new Response(JSON.stringify(company), {
     status: 201,
     headers: { 'Content-Type': 'application/json' },
