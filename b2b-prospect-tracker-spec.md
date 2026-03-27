@@ -1,0 +1,922 @@
+# B2B Prospect Tracker — V1 Build Spec
+
+## Overview
+
+Internal single-user B2B prospect management app for a UK marketing consultancy. Used to track potential B2B referral partners (solicitors, estate agents, nursing homes, etc.) for service business clients like removal companies. The app shows prospects on a map with colour-coded status pins, lets you filter/search/edit them, and provides a kanban pipeline view.
+
+**This is an internal tool, not a public-facing website.** Single user (the consultancy owner) accessing from desktop browser. Requires simple password login to protect data.
+
+---
+
+## Authentication
+
+Simple single-user password auth. No user registration, no OAuth, no external auth provider.
+
+**Implementation:**
+- A single environment variable `AUTH_PASSWORD` holds the password (set in Cloudflare Pages environment settings)
+- Login page at `/login` — single password field + submit button
+- On successful login: set an HTTP-only cookie with a signed session token (use a simple HMAC with a `SESSION_SECRET` env var)
+- Astro middleware checks the cookie on every non-login route. If invalid/missing → redirect to `/login`
+- Session expiry: 7 days
+- Logout button in the topbar → clears cookie → redirect to `/login`
+
+**No database table needed** — this is a single-user app with one password.
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Framework | Astro 6.x with SSR (`output: 'server'`) |
+| Hosting | Cloudflare Pages + Functions |
+| Adapter | `@astrojs/cloudflare` |
+| Database | Cloudflare D1 (SQLite) |
+| Interactive UI | Single React island (`client:only="react"`) |
+| Map | Leaflet + OpenStreetMap tiles |
+| Map clustering | `leaflet.markercluster` |
+| Styling | Tailwind CSS 4 |
+| Icons | Lucide React |
+
+### Why this stack
+- Astro 6 serves the shell, one React island handles all interactivity
+- Astro 6 uses Vite 7 and unified dev/prod runtime — Cloudflare workerd runs natively in dev
+- **IMPORTANT Astro 6 change:** use `process.env.VARIABLE` for runtime env vars, NOT `import.meta.env` (which is now inlined at build time)
+- Requires Node 22+
+- D1 is free-tier SQLite in the cloud, zero config persistence
+- Leaflet is free, no API key needed, looks good with custom tiles
+- No Next.js, no Vercel, no external DB — everything on Cloudflare
+
+### Additional Dependencies
+- `resend` — server-side email sending via Resend API
+- `leaflet.heat` — density heatmap layer for Leaflet
+
+---
+
+## Database Schema (D1 / SQLite)
+
+### `categories` table
+
+```sql
+CREATE TABLE categories (
+  id TEXT PRIMARY KEY,           -- uuid
+  name TEXT NOT NULL UNIQUE,     -- e.g. "Solicitor"
+  color TEXT NOT NULL DEFAULT '#6366f1', -- hex colour for pins & UI
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+```
+
+**Seed data** (insert on first deploy):
+
+| name | color |
+|---|---|
+| Solicitor | #818cf8 |
+| Estate Agent | #f59e0b |
+| Nursing Home | #10b981 |
+| Surveyor | #3b82f6 |
+| Conveyancer | #ec4899 |
+| Other | #6b7280 |
+
+### `companies` table
+
+```sql
+CREATE TABLE companies (
+  id TEXT PRIMARY KEY,            -- uuid
+  name TEXT NOT NULL,
+  category_id TEXT REFERENCES categories(id),
+  address TEXT,
+  postcode TEXT,
+  lat REAL,
+  lng REAL,
+  phone TEXT,
+  website TEXT,
+  generic_email TEXT,
+  contact_name TEXT,
+  contact_email TEXT,
+  contact_phone TEXT,
+  status TEXT NOT NULL DEFAULT 'new'
+    CHECK(status IN ('new','contacted','follow_up','in_conversation','partner','rejected','not_interested')),
+  priority TEXT NOT NULL DEFAULT 'medium'
+    CHECK(priority IN ('high','medium','low')),
+  source TEXT,                     -- e.g. "deep_research", "places_api", "manual"
+  source_url TEXT,
+  google_place_id TEXT,
+  follow_up_date TEXT,                -- ISO date for next follow-up reminder
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+```
+
+### `notes` table
+
+```sql
+CREATE TABLE notes (
+  id TEXT PRIMARY KEY,            -- uuid
+  company_id TEXT NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+  body TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+```
+
+### `email_log` table
+
+```sql
+CREATE TABLE email_log (
+  id TEXT PRIMARY KEY,            -- uuid
+  company_id TEXT NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+  to_email TEXT NOT NULL,
+  subject TEXT NOT NULL,
+  body TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'sent'
+    CHECK(status IN ('sent','failed')),
+  sent_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+```
+
+### Status Model
+
+This is the core of the pipeline. Each status maps to a colour used on map pins and UI badges:
+
+| Status | Label | Pin Colour | Meaning |
+|---|---|---|---|
+| `new` | New | Blue `#3b82f6` | Not yet contacted |
+| `contacted` | Contacted | Yellow `#f59e0b` | First outreach done |
+| `follow_up` | Follow Up | Orange `#f97316` | Need to follow up |
+| `in_conversation` | In Conversation | Purple `#8b5cf6` | Active dialogue |
+| `partner` | Partner | Green `#10b981` | Became referral partner |
+| `rejected` | Rejected | Red `#ef4444` | Said no |
+| `not_interested` | Not Interested | Grey `#6b7280` | Not a fit / no reply |
+
+---
+
+## API Routes (Astro Server Endpoints)
+
+All routes under `src/pages/api/`. All return JSON. Use D1 binding from `context.locals.runtime.env.DB`.
+
+### Companies CRUD
+
+| Method | Path | Action |
+|---|---|---|
+| GET | `/api/companies` | List all (with optional query params for filtering) |
+| POST | `/api/companies` | Create one |
+| PUT | `/api/companies/[id]` | Update one |
+| DELETE | `/api/companies/[id]` | Delete one |
+
+**GET `/api/companies` query params:**
+- `status` — comma-separated status filter (e.g. `new,contacted`)
+- `category` — comma-separated category_id filter
+- `priority` — comma-separated priority filter
+- `search` — free text search across name, address, postcode, contact_name, notes.body
+- `has_email` — `true` to filter companies that have contact_email or generic_email
+- `has_contact` — `true` to filter companies that have contact_name
+
+Response includes joined category name/color and latest 3 notes per company.
+
+### Notes CRUD
+
+| Method | Path | Action |
+|---|---|---|
+| GET | `/api/notes/[companyId]` | Get all notes for a company |
+| POST | `/api/notes` | Create note (body: `{ company_id, body }`) |
+| DELETE | `/api/notes/[id]` | Delete a note |
+
+### Categories CRUD
+
+| Method | Path | Action |
+|---|---|---|
+| GET | `/api/categories` | List all |
+| POST | `/api/categories` | Create one (body: `{ name, color }`) |
+| PUT | `/api/categories/[id]` | Update one |
+| DELETE | `/api/categories/[id]` | Delete (only if no companies use it) |
+
+### Import/Export
+
+| Method | Path | Action |
+|---|---|---|
+| POST | `/api/import` | Bulk import companies from JSON array |
+| GET | `/api/export` | Export all data as JSON (companies + notes + categories + email_log) |
+
+### Email Sending
+
+| Method | Path | Action |
+|---|---|---|
+| POST | `/api/email/send` | Send intro email via Resend (body: `{ company_id, to_email, subject, body }`) |
+| GET | `/api/email/log/[companyId]` | Get email history for a company |
+
+**Email sending implementation:**
+- Uses Resend API (`RESEND_API_KEY` env var)
+- Sender address from `SENDER_EMAIL` env var (e.g. `outreach@soborbo.co.uk`)
+- On send: creates email_log record, creates a note ("Email sent to {email}"), updates company `updated_at`
+- If sending fails: log with status `failed`, show toast error
+- Email templates are stored as simple strings in a `templates` config object in the codebase (not DB). V1 has one template: "intro_email". Can hardcode 2-3 templates.
+
+### Reminders
+
+| Method | Path | Action |
+|---|---|---|
+| GET | `/api/reminders` | Get all companies where `follow_up_date` <= today and status is NOT partner/rejected/not_interested |
+
+**Reminder logic:**
+- When setting a prospect to `contacted` or `follow_up`, the UI prompts for a follow-up date (default: 7 days from now)
+- The `follow_up_date` field on the company record stores this
+- The topbar shows a notification badge with the count of overdue reminders
+- Clicking the badge filters the list to show only overdue follow-ups
+- The sidebar has an "Overdue follow-up" quick filter
+- On the kanban view, overdue cards get a warning border
+- On the map view, overdue pins get a pulsing animation
+
+**Import format** (JSON array of objects):
+
+```json
+[
+  {
+    "name": "Smith & Jones Solicitors",
+    "category": "Solicitor",
+    "address": "15 High Street, Bristol BS1 2AW",
+    "postcode": "BS1 2AW",
+    "lat": 51.4545,
+    "lng": -2.5879,
+    "phone": "0117 123 4567",
+    "website": "https://smithjones.co.uk",
+    "generic_email": "info@smithjones.co.uk",
+    "contact_name": "John Smith",
+    "contact_email": "john@smithjones.co.uk",
+    "contact_phone": "07700 900123",
+    "status": "new",
+    "priority": "high",
+    "source": "deep_research",
+    "notes": "Large practice, 3 partners, handles residential conveyancing"
+  }
+]
+```
+
+Import logic:
+- `category` field is matched by name (case-insensitive). If not found, create the category with a default colour.
+- If `notes` string is provided, create a note record.
+- Generate UUID for id.
+- If a company with the same `name` AND `postcode` already exists, skip it (duplicate detection).
+
+---
+
+## UI Architecture
+
+### Layout: App Shell
+
+```
+┌─────────────────────────────────────────────────────────┐
+│ TOPBAR: Logo | Stats chips | View toggle | Actions      │
+├────────┬────────────────────────────┬───────────────────┤
+│        │                            │                   │
+│ SIDE   │        MAIN AREA           │    LIST PANEL     │
+│ BAR    │  (map / kanban / heatmap)  │   (prospect       │
+│        │                            │    cards)         │
+│ Filters│                            │                   │
+│ Search │                            │                   │
+│ Cats   │                            │                   │
+│        │                            │                   │
+├────────┴────────────────────────────┴───────────────────┤
+```
+
+Everything is a single React island: `<ProspectApp client:only="react" />`
+
+### Topbar
+
+- **Left:** App name "Prospect Tracker" with icon
+- **Centre:** Stat chips (clickable, act as quick filters):
+  - Total: {count}
+  - New: {count} (blue dot)
+  - In Progress: {count} (yellow dot) — sum of contacted + follow_up + in_conversation
+  - Partners: {count} (green dot)
+  - Rejected: {count} (red dot)
+- **Right:**
+  - View toggle: Map | List | Kanban | Heatmap (four buttons, active state)
+  - Reminder badge (bell icon with count of overdue follow-ups, clickable → filters to overdue)
+  - Import button (opens file picker for JSON)
+  - Export button (downloads JSON)
+  - "+ Add Prospect" button (opens empty drawer)
+  - Logout button (icon)
+
+### Sidebar (280px, left)
+
+- **Search box** — free text, debounced 300ms, searches name/address/postcode/contact_name/notes
+- **Status filter** — multi-select checkboxes, one per status with coloured dot + count
+- **Category filter** — multi-select checkboxes, one per category with coloured square + count
+- **Priority filter** — multi-select: High, Medium, Low
+- **Has email** — toggle
+- **Has contact name** — toggle
+- **Overdue follow-up** — toggle (shows only prospects where follow_up_date <= today)
+- **Clear all filters** button (only visible when filters active)
+- **Manage Categories** button at bottom → opens a small modal to add/edit/delete categories with colour picker
+
+### Main Area — Map View (default)
+
+- Full Leaflet map, dark tile style (use CartoDB Dark Matter tiles: `https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png`)
+- Default centre: Bristol, UK (51.4545, -2.5979), zoom 12
+- **Custom circle markers** — coloured by STATUS (not category). Colours from the status table above.
+- **Marker clustering** via leaflet.markercluster with custom dark styling
+- Click marker → opens right-side drawer with company details
+- Hover marker → tooltip with company name + status
+- Map respects all active filters (filtered-out prospects are hidden from map)
+
+### Main Area — List View
+
+Full-width sortable table of all prospects (replaces the map area AND the right-side list panel — in List view, the list panel is hidden since the table IS the list).
+
+**Columns:**
+| Column | Width | Sortable | Content |
+|---|---|---|---|
+| Status | 40px | Yes | Coloured dot |
+| Name | flex | Yes | Company name (bold), clickable → opens drawer |
+| Category | 120px | Yes | Category name with coloured square |
+| Contact | 160px | No | Contact name, or "—" if empty |
+| Email | 180px | No | Contact email or generic email, truncated |
+| Phone | 120px | No | Contact phone or company phone |
+| Priority | 80px | Yes | High/Med/Low badge |
+| Follow-up | 100px | Yes | Date, red if overdue |
+| Updated | 100px | Yes | Relative time ("3d ago") |
+
+**Features:**
+- Click any row → opens detail drawer (same as map/kanban)
+- Sortable columns (click header to sort, click again to reverse)
+- Default sort: updated (newest first)
+- Respects all sidebar filters
+- Alternating row backgrounds for readability (subtle)
+- Sticky header row
+- Shows "Showing X of Y prospects" in top-left
+
+This is essentially a CRM spreadsheet view — quick scanning, bulk assessment, sorting by any field.
+
+### Main Area — Kanban View
+
+- Horizontal board with one column per status
+- Column header: status name + coloured dot + count
+- Cards in each column show: company name, category tag, priority indicator
+- Cards are NOT drag-and-drop in v1 (too much complexity). Instead, clicking a card opens the drawer where you can change status.
+- Columns are scrollable vertically
+- Column order: new → contacted → follow_up → in_conversation → partner | rejected | not_interested (last three can be in a "Closed" group)
+- **Overdue cards** (where `follow_up_date` <= today) get a warning-coloured left border
+
+### Main Area — Heatmap View
+
+Same Leaflet map as Map View, but with an additional `leaflet.heat` density layer on top of the colour-coded pins.
+
+**Two heatmap modes** (toggle in top-right corner of map):
+1. **Status heatmap** — pins are colour-coded by status (same as Map View), with a semi-transparent heat layer showing density. Hot zones = areas with many prospects regardless of status. This helps identify geographic clusters and white spots.
+2. **Activity heatmap** — heat intensity is weighted by status:
+   - `new` (not yet contacted) = highest heat (bright red) — these are the areas needing work
+   - `contacted` / `follow_up` / `in_conversation` = medium heat (yellow)
+   - `partner` = cool (green glow)
+   - `rejected` / `not_interested` = no heat contribution
+
+The default mode is Activity heatmap. The pins remain visible under the heat layer (with reduced opacity).
+
+**Implementation:** Use `leaflet.heat` plugin (`L.heatLayer`). Each point is `[lat, lng, intensity]` where intensity is derived from the status weight. Configurable radius (default 25) and blur (default 15).
+
+### List Panel (380px, right) — visible in Map and Heatmap views only
+
+Hidden in List view (the table replaces it) and Kanban view (cards replace it). Visible alongside the map in Map and Heatmap views.
+
+- Scrollable list of prospect cards matching current filters
+- Each card shows:
+  - Coloured dot (status colour)
+  - Company name (bold)
+  - Category name (small, muted)
+  - Priority badge (only if high — small red/orange badge)
+  - Last note preview (truncated, 1 line)
+- Click card → opens drawer AND centres map on that pin
+- Sort by: name (A-Z), status, priority, recently updated (default: recently updated)
+- Shows count: "Showing 23 of 47 prospects"
+
+### Detail Drawer (slides from right, 520px)
+
+Opens when clicking a prospect (from map, list, or kanban).
+
+**Header:**
+- Company name (large)
+- Status badge (coloured pill, clickable to change status via dropdown)
+- Priority selector (high/medium/low)
+- Close button (X)
+- Delete button (trash icon, with confirmation)
+
+**Sections (scrollable):**
+
+1. **Contact Info**
+   - Contact name, email (mailto: link), phone (tel: link)
+   - Company phone, generic email, website (external link)
+   - Address + postcode
+   - "Copy Email" button next to each email
+
+2. **Email Actions**
+   - "Send Intro Email" button → opens a modal with pre-filled email template (to, subject, body all editable before sending)
+   - Sends via Resend API (server-side)
+   - Shows sending state (spinner) and success/error toast
+   - "Email History" expandable section showing past emails sent (from email_log table) with date + subject
+
+3. **Quick Actions**
+   - Row of buttons: "Mark Contacted" / "Mark Follow Up" / "Mark Partner" etc. (contextual based on current status — show logical next steps only)
+   - When marking as "Contacted" or "Follow Up": a date picker appears for setting the follow-up date (default: 7 days from now)
+
+4. **Follow-up Reminder**
+   - Shows current follow-up date if set
+   - "Set Reminder" / "Change Reminder" date picker
+   - If overdue: shows warning badge with "Overdue by X days"
+
+5. **Details**
+   - Category (dropdown to change)
+   - Source + source URL (link)
+   - Google Place ID (display only)
+   - Created / Updated dates
+
+6. **Notes Timeline**
+   - Chronological list of notes (newest first)
+   - Each note: body text + relative timestamp ("3 days ago")
+   - Auto-generated notes for actions (email sent, status changed) shown in a different style (muted, with action icon)
+   - "Add Note" text area + submit button at top
+   - Delete note (small X on each note, only for manual notes)
+
+7. **All fields are editable inline.** Click a value → it becomes an input → blur or Enter saves → API call → update.
+
+### Email Templates (Resend)
+
+The app sends emails via Resend API (server-side, from an Astro API endpoint). Templates are defined in `src/lib/email-templates.ts`.
+
+**V1 templates:**
+
+1. **Intro Email** — first outreach to a new prospect
+2. **Follow-Up Email** — reminder/nudge after first contact
+3. **Partnership Proposal** — more detailed partnership pitch
+
+Each template is a function that receives `{ companyName, contactName, clientName }` and returns `{ subject, body }` (plain text). The email modal in the drawer pre-fills from the template but allows editing before send.
+
+**Env vars needed:**
+- `RESEND_API_KEY` — from resend.com
+- `SENDER_EMAIL` — verified sender (e.g. `outreach@soborbo.co.uk`)
+- `SENDER_NAME` — display name (e.g. `Laszlo — Soborbo`)
+
+---
+
+## UI Design Requirements
+
+### Aesthetic Direction
+
+**Premium dark B2B dashboard.** Think Linear, Raycast, or Arc browser — not generic Bootstrap admin.
+
+- **Background:** Very dark blue-black (#0c0e14 base, #13151e surfaces, #1a1d2a elevated)
+- **Text:** Light grey-blue (#e8eaf4 primary, #8990b0 secondary, #5c6280 muted)
+- **Accent:** Indigo (#818cf8 / #6366f1)
+- **Borders:** Subtle (#2a2d42), never harsh
+- **Font:** "DM Sans" for UI, "JetBrains Mono" for data/counts
+- **Border radius:** 10px default, 6px small, 14px large
+- **Transitions:** All interactive elements have 200ms cubic-bezier(.4,0,.2,1)
+- **Shadows:** Deep and diffuse, never sharp
+
+### Key UI Patterns
+
+- **Status pills:** Rounded, subtle background colour matching status, white text
+- **Filter checkboxes:** Custom styled, not native
+- **Cards:** Subtle border, slight hover elevation/glow, selected state with accent border
+- **Drawer:** Slides from right with backdrop overlay, smooth animation
+- **Search:** Has search icon, subtle glow on focus
+- **Empty states:** Friendly illustration or icon + helpful text ("No prospects yet. Import some data to get started.")
+- **Loading states:** Skeleton loaders, not spinners
+- **Toasts:** Bottom-right, subtle, auto-dismiss for success, persistent for errors
+
+### Responsive
+
+Not a priority. Desktop only (1280px+ viewport). If under 1024px, show a "Use desktop for best experience" message.
+
+---
+
+## Project Structure
+
+```
+/
+├── astro.config.mjs
+├── package.json
+├── wrangler.toml                    # D1 binding config
+├── schema.sql                       # D1 schema + seed data
+├── tailwind.config.mjs
+├── public/
+│   └── favicon.svg
+├── src/
+│   ├── middleware.ts                 # Auth middleware — cookie check, redirect to /login
+│   ├── layouts/
+│   │   └── Layout.astro             # HTML shell, font loading, Tailwind
+│   ├── pages/
+│   │   ├── index.astro              # Main page, mounts the React island (protected)
+│   │   ├── login.astro              # Login page (public)
+│   │   └── api/
+│   │       ├── auth/
+│   │       │   ├── login.ts         # POST — verify password, set cookie
+│   │       │   └── logout.ts        # POST — clear cookie
+│   │       ├── companies/
+│   │       │   ├── index.ts         # GET (list) + POST (create)
+│   │       │   └── [id].ts          # PUT + DELETE
+│   │       ├── notes/
+│   │       │   ├── index.ts         # POST (create)
+│   │       │   └── [id].ts          # GET (by company) + DELETE
+│   │       ├── categories/
+│   │       │   ├── index.ts         # GET + POST
+│   │       │   └── [id].ts          # PUT + DELETE
+│   │       ├── email/
+│   │       │   ├── send.ts          # POST — send via Resend
+│   │       │   └── log/
+│   │       │       └── [companyId].ts  # GET — email history
+│   │       ├── reminders.ts         # GET — overdue follow-ups
+│   │       ├── import.ts            # POST bulk import
+│   │       └── export.ts            # GET full export
+│   ├── components/
+│   │   └── ProspectApp/
+│   │       ├── ProspectApp.tsx       # Main app component, state management
+│   │       ├── TopBar.tsx
+│   │       ├── Sidebar.tsx
+│   │       ├── MapView.tsx           # Leaflet map with colour-coded pins
+│   │       ├── ListView.tsx          # Full-width sortable table view
+│   │       ├── HeatmapView.tsx       # Leaflet map with leaflet.heat layer
+│   │       ├── KanbanView.tsx
+│   │       ├── ListPanel.tsx
+│   │       ├── ProspectCard.tsx
+│   │       ├── DetailDrawer.tsx
+│   │       ├── EmailModal.tsx        # Email compose/send modal
+│   │       ├── CategoryManager.tsx   # Modal for managing categories
+│   │       ├── ImportExport.tsx
+│   │       ├── StatusBadge.tsx
+│   │       ├── PriorityBadge.tsx
+│   │       ├── NoteTimeline.tsx
+│   │       ├── ReminderBadge.tsx     # Topbar reminder notification
+│   │       ├── FollowUpPicker.tsx    # Date picker for follow-up reminders
+│   │       ├── FilterCheckbox.tsx
+│   │       ├── Toast.tsx
+│   │       ├── EmptyState.tsx
+│   │       └── types.ts             # TypeScript interfaces
+│   └── lib/
+│       ├── constants.ts             # Status definitions, colours, labels
+│       ├── email-templates.ts       # Email template functions
+│       ├── auth.ts                  # Cookie signing/verification helpers
+│       └── utils.ts                 # UUID generation, date formatting, etc.
+```
+
+---
+
+## State Management
+
+Use React `useReducer` + context in ProspectApp.tsx. No external state library.
+
+**App state shape:**
+
+```typescript
+interface AppState {
+  companies: Company[];
+  categories: Category[];
+  filters: {
+    search: string;
+    statuses: string[];       // active status filters
+    categories: string[];     // active category_id filters
+    priorities: string[];
+    hasEmail: boolean;
+    hasContact: boolean;
+    overdueOnly: boolean;     // show only overdue follow-ups
+  };
+  view: 'map' | 'list' | 'kanban' | 'heatmap';
+  heatmapMode: 'density' | 'activity';  // heatmap sub-mode
+  selectedCompanyId: string | null;  // drawer open
+  drawerMode: 'view' | 'create';
+  emailModalOpen: boolean;           // email compose modal
+  sortBy: 'name' | 'status' | 'priority' | 'updated' | 'follow_up';
+  overdueCount: number;              // for topbar badge
+  isLoading: boolean;
+  toast: { message: string; type: 'success' | 'error' } | null;
+}
+```
+
+**Data flow:**
+1. On mount: fetch all companies + categories from API
+2. Filters applied client-side (data set will be small, < 1000 records)
+3. CRUD operations: optimistic update → API call → revert on error
+4. Drawer changes: save on field blur or Enter key
+
+---
+
+## Development & Deployment
+
+### Local Development
+
+```bash
+npm create astro@latest prospect-tracker
+cd prospect-tracker
+npx astro add react tailwind cloudflare
+npm install leaflet react-leaflet leaflet.markercluster leaflet.heat uuid lucide-react resend
+npm install -D @types/leaflet wrangler
+
+# Create D1 database locally
+npx wrangler d1 create prospect-tracker-db
+npx wrangler d1 execute prospect-tracker-db --local --file=schema.sql
+
+# Run dev (Astro 6 runs workerd natively — D1 works locally)
+npm run dev
+```
+
+### Environment Variables
+
+Set these in Cloudflare Pages environment settings (and `.dev.vars` locally):
+
+```
+AUTH_PASSWORD=your-secure-password
+SESSION_SECRET=random-32-char-string
+RESEND_API_KEY=re_xxxxxxxxxx
+SENDER_EMAIL=outreach@soborbo.co.uk
+SENDER_NAME=Laszlo — Soborbo
+```
+
+### wrangler.toml
+
+```toml
+name = "prospect-tracker"
+compatibility_date = "2024-12-01"
+pages_build_output_dir = "./dist"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "prospect-tracker-db"
+database_id = "<from wrangler d1 create output>"
+```
+
+### Deployment
+
+```bash
+# Create production D1
+npx wrangler d1 create prospect-tracker-db
+npx wrangler d1 execute prospect-tracker-db --file=schema.sql
+
+# Deploy
+npm run build
+npx wrangler pages deploy ./dist
+```
+
+---
+
+## Import JSON Format (for Deep Research output)
+
+When using Claude Deep Research to gather prospects, ask it to output this format:
+
+```json
+[
+  {
+    "name": "Company Name",
+    "category": "Solicitor",
+    "address": "Full address including city",
+    "postcode": "BS1 2AW",
+    "lat": 51.4545,
+    "lng": -2.5879,
+    "phone": "0117 123 4567",
+    "website": "https://example.co.uk",
+    "generic_email": "info@example.co.uk",
+    "contact_name": "Name of decision maker",
+    "contact_email": "person@example.co.uk",
+    "contact_phone": "07700 900123",
+    "priority": "high",
+    "source": "deep_research",
+    "notes": "Any relevant context"
+  }
+]
+```
+
+Fields `lat` and `lng` can be omitted — if missing, the prospect won't appear on the map but will appear in list and kanban. The import endpoint handles:
+- Auto-creating categories that don't exist
+- Skipping duplicates (same name + postcode)
+- Creating note records from the `notes` field
+- Generating UUIDs
+- Setting `status` to "new" if not provided
+
+---
+
+## Build Phases
+
+Build this project in 7 sequential phases. Each phase should be fully working and testable before moving to the next. Do NOT skip ahead or mix phases.
+
+---
+
+### Phase 1: Project Setup + D1 Schema + Auth
+
+**Goal:** Astro 6 project that deploys to Cloudflare Pages with D1, login works.
+
+**Tasks:**
+1. `npm create astro@latest` with Astro 6, React, Tailwind CSS 4, Cloudflare adapter
+2. Create `wrangler.toml` with D1 binding
+3. Create `schema.sql` with all 4 tables (categories, companies, notes, email_log) + seed data for 6 default categories
+4. Create `src/lib/auth.ts` — HMAC cookie signing/verification helpers
+5. Create `src/middleware.ts` — check auth cookie on all routes except `/login` and `/api/auth/*`
+6. Create `src/pages/login.astro` — simple dark-themed password form
+7. Create `src/pages/api/auth/login.ts` — POST, verify against `AUTH_PASSWORD` env var, set HTTP-only cookie
+8. Create `src/pages/api/auth/logout.ts` — POST, clear cookie
+9. Create `src/pages/index.astro` — protected page, for now just shows "Logged in" text
+10. Create `src/lib/constants.ts` — status definitions (label, color), priority definitions
+11. Create `src/lib/utils.ts` — UUID generation, date formatting helpers
+12. Test: `wrangler d1 execute --local --file=schema.sql`, `npm run dev`, login flow works
+
+**Verify before moving on:** Can log in, cookie persists on refresh, redirect to /login when not authed, D1 tables exist locally.
+
+---
+
+### Phase 2: API Routes (CRUD)
+
+**Goal:** All API endpoints work and can be tested with curl/Postman.
+
+**Tasks:**
+1. `GET /api/companies` — list all with joined category name/color, supports query params (status, category, priority, search, has_email, has_contact, overdue). Search should query name, address, postcode, contact_name, and notes.body.
+2. `POST /api/companies` — create one, generate UUID, set created_at/updated_at
+3. `PUT /api/companies/[id]` — update one, set updated_at
+4. `DELETE /api/companies/[id]` — delete one (cascade deletes notes + email_log via FK)
+5. `GET /api/notes/[companyId]` — all notes for a company, ordered by created_at DESC
+6. `POST /api/notes` — create note with company_id + body
+7. `DELETE /api/notes/[id]` — delete one note
+8. `GET /api/categories` — list all with count of companies per category
+9. `POST /api/categories` — create one (name + color)
+10. `PUT /api/categories/[id]` — update name/color
+11. `DELETE /api/categories/[id]` — delete only if no companies reference it, else return 409
+12. `POST /api/import` — bulk import JSON array. Match category by name (case-insensitive, create if missing). Skip duplicates (same name + postcode). Create note from `notes` field. Generate UUIDs.
+13. `GET /api/export` — export all data as single JSON (companies with their notes, categories, email_log)
+14. `GET /api/reminders` — companies where follow_up_date <= today AND status NOT IN (partner, rejected, not_interested)
+
+**Verify before moving on:** All endpoints return correct data. Import 5 test records via curl. Export returns them. CRUD works for companies, notes, categories.
+
+---
+
+### Phase 3: App Shell + State Management + Sidebar
+
+**Goal:** The React island mounts, loads data, sidebar filters work, but no map/list/kanban yet — just a placeholder main area.
+
+**Tasks:**
+1. Create `src/components/ProspectApp/types.ts` — TypeScript interfaces for Company, Category, Note, EmailLog, AppState, filters
+2. Create `src/components/ProspectApp/ProspectApp.tsx` — main component with useReducer, data fetching on mount, filter logic
+3. Create `src/components/ProspectApp/TopBar.tsx` — app name, stat chips (total, new, in progress, partners, rejected) that are clickable quick filters, view toggle buttons (Map | List | Kanban | Heatmap — disabled for now), reminder badge (bell + overdue count), import/export buttons, "+ Add" button, logout button
+4. Create `src/components/ProspectApp/Sidebar.tsx` — search input (debounced 300ms), status filter checkboxes with coloured dots + counts, category filter checkboxes with coloured squares + counts, priority filter (high/med/low), has email toggle, has contact toggle, overdue follow-up toggle, clear all button, "Manage Categories" button
+5. Create `src/components/ProspectApp/CategoryManager.tsx` — modal to add/edit/delete categories with name + colour picker
+6. Create `src/components/ProspectApp/ImportExport.tsx` — import: file picker for JSON, parse + POST to /api/import. Export: GET /api/export + download as file.
+7. Create `src/components/ProspectApp/Toast.tsx` — bottom-right toast notifications
+8. Create `src/components/ProspectApp/EmptyState.tsx` — friendly empty state for when no prospects exist or filters return nothing
+9. Create helper components: `StatusBadge.tsx`, `PriorityBadge.tsx`, `FilterCheckbox.tsx`
+10. Mount `<ProspectApp client:only="react" />` in `index.astro`
+11. Apply the dark premium theme (colours from the UI Design Requirements section in this spec)
+
+**Verify before moving on:** App loads, shows stat chips with correct counts, sidebar filters work (changing filters updates counts and filtered data), categories can be managed, import/export works, toasts show on actions.
+
+---
+
+### Phase 4: Map View + List Panel
+
+**Goal:** Default Map view with colour-coded pins, clustering, and the right-side prospect list.
+
+**Tasks:**
+1. Create `src/components/ProspectApp/MapView.tsx`:
+   - Leaflet map, CartoDB Dark Matter tiles
+   - Default centre: Bristol (51.4545, -2.5979), zoom 12
+   - Custom circle markers coloured by status
+   - Marker clustering with dark-styled clusters
+   - Click marker → set selectedCompanyId (opens drawer)
+   - Hover marker → tooltip with name + status
+   - Filtered prospects only (respect sidebar filters)
+   - Overdue follow-up pins get a pulsing CSS animation
+2. Create `src/components/ProspectApp/ListPanel.tsx` (380px right panel):
+   - Scrollable list of ProspectCards
+   - Shows count: "Showing X of Y"
+   - Sort dropdown (name, status, priority, updated, follow-up)
+3. Create `src/components/ProspectApp/ProspectCard.tsx`:
+   - Status colour dot, company name, category, priority badge (if high), last note preview, overdue warning
+   - Click → set selectedCompanyId + centre map on pin
+   - Selected state with accent border
+4. Wire up view toggle — Map button now works and shows MapView + ListPanel
+
+**Verify before moving on:** Map loads with pins in correct colours, clustering works, clicking pin/card selects it, filters hide/show pins, overdue pins pulse.
+
+---
+
+### Phase 5: Detail Drawer + Notes + Follow-up
+
+**Goal:** Clicking a prospect opens the drawer with full details, inline editing, notes timeline, and follow-up management.
+
+**Tasks:**
+1. Create `src/components/ProspectApp/DetailDrawer.tsx`:
+   - Slides from right (520px), backdrop overlay, smooth animation
+   - Header: company name, status badge (clickable dropdown to change), priority selector, close + delete buttons
+   - Contact info section: all fields displayed, each editable inline (click → input → blur saves via PUT)
+   - Quick action buttons: contextual next-status buttons (e.g. if status is "new", show "Mark Contacted" and "Mark Rejected")
+   - When marking as "contacted" or "follow_up": show FollowUpPicker
+   - Details section: category dropdown, source, source_url, google_place_id, created/updated dates
+   - "Send Intro Email" button (opens EmailModal — built in Phase 6)
+2. Create `src/components/ProspectApp/NoteTimeline.tsx`:
+   - List of notes newest first
+   - Manual notes: body + relative timestamp + delete button
+   - Auto-generated notes (status changes, emails sent): muted style with icon, no delete
+   - "Add Note" textarea + submit at top
+3. Create `src/components/ProspectApp/FollowUpPicker.tsx`:
+   - Date input for setting follow_up_date
+   - Quick buttons: "+3 days", "+7 days", "+14 days", "+30 days"
+   - Shows current follow-up date if set
+   - Overdue warning badge
+4. Create `src/components/ProspectApp/ReminderBadge.tsx`:
+   - Bell icon in topbar with count badge
+   - Click → toggles overdueOnly filter
+
+**Verify before moving on:** Drawer opens/closes smoothly, all fields editable, status changes work, notes can be added/deleted, follow-up date can be set, overdue badge counts correctly.
+
+---
+
+### Phase 6: Email Sending + List View + Kanban View
+
+**Goal:** Resend email integration, plus the List and Kanban views.
+
+**Tasks:**
+1. Create `src/pages/api/email/send.ts` — POST, sends via Resend API, creates email_log record + auto-note
+2. Create `src/pages/api/email/log/[companyId].ts` — GET, returns email history
+3. Create `src/lib/email-templates.ts` — 3 template functions (intro, follow_up, partnership)
+4. Create `src/components/ProspectApp/EmailModal.tsx`:
+   - Modal overlay with template selector dropdown
+   - Pre-filled fields: to (from contact_email/generic_email), subject, body — all editable
+   - Send button with loading state
+   - Success/error toast
+   - Email history section (collapsible list of past emails with date + subject)
+5. Create `src/components/ProspectApp/ListView.tsx`:
+   - Full-width sortable table (columns: status dot, name, category, contact, email, phone, priority, follow-up date, updated)
+   - Clickable headers for sorting
+   - Click row → opens drawer
+   - Sticky header, alternating row backgrounds
+   - Respects all sidebar filters
+   - Hides the right-side ListPanel (table IS the list)
+6. Create `src/components/ProspectApp/KanbanView.tsx`:
+   - Horizontal board, one column per status
+   - Column header: status name + dot + count
+   - Cards: company name + category tag + priority indicator + overdue warning
+   - Click card → opens drawer
+   - Overdue cards get warning border
+   - Columns scroll vertically, board scrolls horizontally if needed
+   - No drag-and-drop (status changes via drawer)
+   - Hides the right-side ListPanel
+7. Wire up view toggle — all 4 views now work (Map | List | Kanban | Heatmap placeholder)
+
+**Verify before moving on:** Can send email from drawer, email appears in log, templates pre-fill correctly. List view sorts by all columns. Kanban shows correct cards per column. All views respect filters.
+
+---
+
+### Phase 7: Heatmap View + Polish + Final Testing
+
+**Goal:** Heatmap view works, UI is polished, everything tested end-to-end.
+
+**Tasks:**
+1. Create `src/components/ProspectApp/HeatmapView.tsx`:
+   - Same Leaflet map as MapView (reuse map setup)
+   - Adds leaflet.heat layer on top
+   - Two modes with toggle button in map corner: "Density" (all points equal weight) and "Activity" (weighted by status: new=1.0, contacted/follow_up/in_conversation=0.5, partner=0.1, rejected/not_interested=0.0)
+   - Pins remain visible under heat layer at reduced opacity
+   - Configurable radius/blur
+   - ListPanel visible alongside (same as Map view)
+2. Polish pass:
+   - Skeleton loading states on initial data fetch
+   - Empty states for all views when no data or filters return nothing
+   - Keyboard shortcuts: Escape closes drawer, Enter submits forms
+   - Transition animations: drawer slide, view switch fade, toast enter/exit
+   - Confirm dialog before delete (company or note)
+   - Error handling on all API calls with user-friendly toast messages
+   - "Desktop only" message for viewports under 1024px
+3. Import experience:
+   - Show import preview (count of new vs duplicate) before confirming
+   - Progress indicator for large imports
+   - Import result summary toast ("Imported 23 prospects, 4 duplicates skipped")
+4. Final testing:
+   - Import 20-30 test prospects via JSON
+   - Test all 4 views with filters active
+   - Test CRUD on companies, notes, categories
+   - Test email sending (Resend test mode)
+   - Test follow-up reminders (set dates in the past)
+   - Test export and re-import
+   - Test login/logout flow
+   - Deploy to Cloudflare Pages, verify D1 works in production
+
+**Verify:** Everything works. The app is usable, polished, and ready for real data.
+
+---
+
+## What is NOT in V1
+
+- No Google Places API integration (prospects come via JSON import)
+- No drag-and-drop on kanban (click card → change status in drawer)
+- No mobile layout (desktop only, 1280px+)
+- No multi-user / sharing (single user with password)
+- No multi-client support (one prospect list for all)
+- No CSV import (JSON only)
+- No inline map search for new prospects
+- No audit log (who changed what when)
+
+---
+
+## Future Candidates (not to build now, just for architectural awareness)
+
+- Google Places API search within app (add prospects from search)
+- Activity timeline per company (separate `activities` table)
+- CSV import/export
+- Saved filter presets
+- Drag-and-drop kanban
+- Basic reporting dashboard (conversion rates, outreach stats)
+- Multi-client support (separate prospect lists per client)
+- Bulk email sending (send to all filtered prospects at once)
+- Email open tracking (via Resend webhooks)
