@@ -26,6 +26,7 @@ export default function AddressAutocomplete({ onSelect }: Props) {
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const abortRef = useRef<AbortController | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   // Close on outside click
@@ -39,23 +40,40 @@ export default function AddressAutocomplete({ onSelect }: Props) {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
+  // Cleanup debounce and abort on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      abortRef.current?.abort();
+    };
+  }, []);
+
   const search = useCallback(async (input: string) => {
     if (!input || input.length < 3) {
       setPredictions([]);
       return;
     }
+
+    // Abort previous in-flight request
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
     setLoading(true);
     try {
       const res = await fetch('/api/geocode', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ input, types: 'establishment' }),
+        signal: controller.signal,
       });
       const data = await res.json();
       setPredictions(data.predictions || []);
       setOpen(true);
-    } catch {
-      setPredictions([]);
+    } catch (err: any) {
+      if (err?.name !== 'AbortError') {
+        setPredictions([]);
+      }
     }
     setLoading(false);
   }, []);
@@ -72,10 +90,18 @@ export default function AddressAutocomplete({ onSelect }: Props) {
     setLoading(true);
     try {
       const res = await fetch(`/api/geocode?place_id=${encodeURIComponent(prediction.place_id)}`);
-      const details: PlaceDetails = await res.json();
-      onSelect({ ...details, place_id: prediction.place_id });
+      if (res.ok) {
+        const details: PlaceDetails = await res.json();
+        onSelect({ ...details, place_id: prediction.place_id });
+      } else {
+        onSelect({
+          lat: null, lng: null,
+          address: prediction.description,
+          name: null, phone: null, website: null,
+          place_id: prediction.place_id,
+        });
+      }
     } catch {
-      // fallback — pass prediction data without coordinates
       onSelect({
         lat: null, lng: null,
         address: prediction.description,
@@ -105,6 +131,7 @@ export default function AddressAutocomplete({ onSelect }: Props) {
         <div
           className="absolute top-full left-0 right-0 mt-1 rounded-[6px] py-1 z-20 max-h-[200px] overflow-y-auto shadow-lg"
           style={{ backgroundColor: THEME.surface, border: `1px solid ${THEME.border}` }}
+          role="listbox"
         >
           {predictions.map((p) => (
             <button
@@ -112,6 +139,7 @@ export default function AddressAutocomplete({ onSelect }: Props) {
               onClick={() => handleSelect(p)}
               className="w-full text-left px-3 py-2 text-sm cursor-pointer transition-colors"
               style={{ color: THEME.textPrimary }}
+              role="option"
             >
               {p.description}
             </button>

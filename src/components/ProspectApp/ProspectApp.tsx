@@ -313,16 +313,14 @@ export default function ProspectApp() {
 
   const handleDeleteCompany = useCallback(async (id: string) => {
     try {
-      const company = state.companies.find((c) => c.id === id);
       const res = await fetch(`/api/companies/${id}`, { method: 'DELETE' });
       if (res.ok) {
         dispatch({ type: 'REMOVE_COMPANY', payload: id });
         dispatch({ type: 'SET_TOAST', payload: { message: 'Prospect deleted', type: 'success' } });
-        // Log activity
         fetch('/api/activity-log', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'company_deleted', details: company?.name || id }),
+          body: JSON.stringify({ action: 'company_deleted', details: id }),
         }).catch(() => {});
       } else {
         dispatch({ type: 'SET_TOAST', payload: { message: 'Failed to delete', type: 'error' } });
@@ -330,7 +328,7 @@ export default function ProspectApp() {
     } catch {
       dispatch({ type: 'SET_TOAST', payload: { message: 'Failed to delete', type: 'error' } });
     }
-  }, [state.companies]);
+  }, []);
 
   const handleSortChange = useCallback((by: SortBy) => {
     dispatch({ type: 'TOGGLE_SORT', payload: by });
@@ -338,10 +336,8 @@ export default function ProspectApp() {
 
   // Kanban drag-and-drop status update
   const handleKanbanStatusUpdate = useCallback(async (companyId: string, newStatus: Status) => {
-    const company = state.companies.find((c) => c.id === companyId);
-    if (!company) return;
-    const oldStatus = company.status;
     try {
+      // Fetch current status from server to avoid stale closure
       const res = await fetch(`/api/companies/${companyId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -350,23 +346,21 @@ export default function ProspectApp() {
       if (res.ok) {
         const updated = await res.json();
         dispatch({ type: 'UPDATE_COMPANY', payload: updated });
-        // Auto-note
         fetch('/api/notes', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ company_id: companyId, body: `Status changed from ${oldStatus} to ${newStatus} (drag & drop)` }),
+          body: JSON.stringify({ company_id: companyId, body: `Status changed to ${newStatus} (drag & drop)` }),
         }).catch(() => {});
-        // Log activity
         fetch('/api/activity-log', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ company_id: companyId, action: 'status_changed', details: `${oldStatus} → ${newStatus} (kanban)` }),
+          body: JSON.stringify({ company_id: companyId, action: 'status_changed', details: `→ ${newStatus} (kanban)` }),
         }).catch(() => {});
       }
     } catch {
       dispatch({ type: 'SET_TOAST', payload: { message: 'Failed to update status', type: 'error' } });
     }
-  }, [state.companies]);
+  }, []);
 
   // Bulk action handler
   const handleBulkAction = useCallback(async (action: string, value?: string) => {
@@ -542,16 +536,17 @@ export default function ProspectApp() {
       />
 
       {state.emailModalOpen && state.selectedCompanyId && (() => {
-        const sc = state.companies.find((c) => c.id === state.selectedCompanyId);
-        return sc ? (
+        const emailCompany = state.companies.find((c) => c.id === state.selectedCompanyId);
+        if (!emailCompany) return null;
+        return (
           <EmailModal
-            company={sc}
-            open={state.emailModalOpen}
+            company={emailCompany}
+            open
             onClose={() => dispatch({ type: 'SET_EMAIL_MODAL', payload: false })}
             onSent={fetchData}
             onToast={(msg, type) => dispatch({ type: 'SET_TOAST', payload: { message: msg, type } })}
           />
-        ) : null;
+        );
       })()}
 
       {/* Modals */}

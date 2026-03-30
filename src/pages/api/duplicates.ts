@@ -34,42 +34,60 @@ function similarity(a: string, b: string): number {
   return 1 - levenshtein(na, nb) / maxLen;
 }
 
+// Cap companies for O(n^2) safety
+const MAX_COMPANIES_FOR_DUPLICATE_CHECK = 2000;
+
 export const GET: APIRoute = async ({ request }) => {
-  const { DB: db } = await getCfEnv();
-  const url = new URL(request.url);
-  const threshold = parseFloat(url.searchParams.get('threshold') || '0.7');
+  try {
+    const { DB: db } = await getCfEnv();
+    const url = new URL(request.url);
+    const rawThreshold = parseFloat(url.searchParams.get('threshold') || '0.7');
+    const threshold = isNaN(rawThreshold) ? 0.7 : Math.max(0.5, Math.min(0.99, rawThreshold));
 
-  const { results: companies } = await db.prepare(
-    'SELECT id, name, postcode, address FROM companies ORDER BY name'
-  ).all();
+    const { results } = await db.prepare(
+      `SELECT id, name, postcode, address FROM companies ORDER BY name LIMIT ${MAX_COMPANIES_FOR_DUPLICATE_CHECK}`
+    ).all();
 
-  const duplicates: { a: any; b: any; score: number }[] = [];
+    const companies = (results as any[]).filter((c) => c.name);
 
-  for (let i = 0; i < companies.length; i++) {
-    for (let j = i + 1; j < companies.length; j++) {
-      const a = companies[i];
-      const b = companies[j];
+    const duplicates: { a: any; b: any; score: number }[] = [];
 
-      let score = similarity(a.name, b.name);
+    for (let i = 0; i < companies.length; i++) {
+      for (let j = i + 1; j < companies.length; j++) {
+        const a = companies[i];
+        const b = companies[j];
 
-      // Boost score if postcodes match
-      if (a.postcode && b.postcode && normalise(a.postcode) === normalise(b.postcode)) {
-        score = Math.min(1, score + 0.15);
-      }
+        // Quick pre-filter: first 3 normalized chars must share at least 1
+        const na = normalise(a.name);
+        const nb = normalise(b.name);
+        if (na.length > 3 && nb.length > 3 && na.slice(0, 3) !== nb.slice(0, 3)) continue;
 
-      if (score >= threshold) {
-        duplicates.push({
-          a: { id: a.id, name: a.name, postcode: a.postcode, address: a.address },
-          b: { id: b.id, name: b.name, postcode: b.postcode, address: b.address },
-          score: Math.round(score * 100) / 100,
-        });
+        let score = similarity(a.name, b.name);
+
+        // Boost score if postcodes match
+        if (a.postcode && b.postcode && normalise(a.postcode) === normalise(b.postcode)) {
+          score = Math.min(1, score + 0.15);
+        }
+
+        if (score >= threshold) {
+          duplicates.push({
+            a: { id: a.id, name: a.name, postcode: a.postcode, address: a.address },
+            b: { id: b.id, name: b.name, postcode: b.postcode, address: b.address },
+            score: Math.round(score * 100) / 100,
+          });
+        }
       }
     }
+
+    duplicates.sort((a, b) => b.score - a.score);
+
+    return new Response(JSON.stringify(duplicates.slice(0, 50)), {
+      headers: { 'Content-Type': 'application/json' },
+    });
+  } catch {
+    return new Response(JSON.stringify({ error: 'Failed to check for duplicates' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
-
-  duplicates.sort((a, b) => b.score - a.score);
-
-  return new Response(JSON.stringify(duplicates.slice(0, 50)), {
-    headers: { 'Content-Type': 'application/json' },
-  });
 };

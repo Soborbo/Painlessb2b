@@ -3,6 +3,9 @@ import { getCfEnv } from '../../lib/cf-env';
 import { generateId } from '../../lib/utils';
 import { SITE_CONFIG } from '../../lib/site-config';
 
+const VALID_STATUSES = ['new', 'contacted', 'follow_up', 'in_conversation', 'partner', 'rejected', 'not_interested'];
+const VALID_PRIORITIES = ['high', 'medium', 'low'];
+
 function parseCsvLine(line: string): string[] {
   const fields: string[] = [];
   let current = '';
@@ -36,6 +39,9 @@ function parseCsvLine(line: string): string[] {
   return fields;
 }
 
+// Max 10MB CSV
+const MAX_CSV_SIZE = 10 * 1024 * 1024;
+
 export const POST: APIRoute = async ({ request }) => {
   const { DB: db } = await getCfEnv();
 
@@ -45,7 +51,6 @@ export const POST: APIRoute = async ({ request }) => {
   if (contentType.includes('text/csv') || contentType.includes('text/plain')) {
     csvText = await request.text();
   } else {
-    // Try as form data
     try {
       const formData = await request.formData();
       const file = formData.get('file');
@@ -62,6 +67,13 @@ export const POST: APIRoute = async ({ request }) => {
         headers: { 'Content-Type': 'application/json' },
       });
     }
+  }
+
+  if (csvText.length > MAX_CSV_SIZE) {
+    return new Response(JSON.stringify({ error: 'CSV file exceeds 10MB limit' }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 
   const lines = csvText.split(/\r?\n/).filter((l) => l.trim());
@@ -119,19 +131,30 @@ export const POST: APIRoute = async ({ request }) => {
           'SELECT id FROM categories WHERE LOWER(name) = LOWER(?)'
         ).bind(catName).first();
         if (cat) {
-          categoryId = cat.id;
+          categoryId = (cat as any).id;
         } else {
           categoryId = generateId();
           await db.prepare(
-            'INSERT INTO categories (id, name, color) VALUES (?, ?, ?)'
+            'INSERT OR IGNORE INTO categories (id, name, color) VALUES (?, ?, ?)'
           ).bind(categoryId, catName, SITE_CONFIG.defaultCategoryColor).run();
+          // Re-fetch in case INSERT OR IGNORE hit a conflict
+          const fetched = await db.prepare(
+            'SELECT id FROM categories WHERE LOWER(name) = LOWER(?)'
+          ).bind(catName).first();
+          if (fetched) categoryId = (fetched as any).id;
         }
       }
 
       const companyId = generateId();
       const now = new Date().toISOString();
-      const lat = row.lat ? parseFloat(row.lat) : null;
-      const lng = row.lng ? parseFloat(row.lng) : null;
+      const rawLat = parseFloat(row.lat);
+      const rawLng = parseFloat(row.lng);
+      const lat = !isNaN(rawLat) ? rawLat : null;
+      const lng = !isNaN(rawLng) ? rawLng : null;
+
+      // Validate status and priority
+      const status = VALID_STATUSES.includes(row.status) ? row.status : 'new';
+      const priority = VALID_PRIORITIES.includes(row.priority) ? row.priority : 'medium';
 
       await db.prepare(`
         INSERT INTO companies (id, name, category_id, address, postcode, lat, lng, phone, website, generic_email, contact_name, contact_email, contact_phone, status, priority, source, source_url, follow_up_date, created_at, updated_at)
@@ -150,8 +173,8 @@ export const POST: APIRoute = async ({ request }) => {
         row.contact_name || null,
         row.contact_email || null,
         row.contact_phone || null,
-        row.status || 'new',
-        row.priority || 'medium',
+        status,
+        priority,
         row.source || null,
         row.source_url || null,
         row.follow_up_date || null,

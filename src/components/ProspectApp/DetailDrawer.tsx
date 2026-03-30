@@ -191,7 +191,7 @@ export default function DetailDrawer({ company, categories, drawerMode, onClose,
       body: JSON.stringify({ company_id: company.id, action: 'status_changed', details: `${STATUS_CONFIG[oldStatus].label} → ${STATUS_CONFIG[status].label}` }),
     }).catch(() => {});
     const res = await fetch(`/api/notes/${company.id}`);
-    setNotes(await res.json());
+    if (res.ok) setNotes(await res.json());
   }, [company, onUpdate]);
 
   const handleQuickAction = useCallback(async (action: { label: string; status: Status; showFollowUp?: boolean }) => {
@@ -213,7 +213,7 @@ export default function DetailDrawer({ company, categories, drawerMode, onClose,
       body: JSON.stringify({ company_id: company.id, action: 'note_added', details: body.slice(0, 100) }),
     }).catch(() => {});
     const res = await fetch(`/api/notes/${company.id}`);
-    setNotes(await res.json());
+    if (res.ok) setNotes(await res.json());
   }, [company]);
 
   const handleDeleteNote = useCallback(async (noteId: string) => {
@@ -483,7 +483,7 @@ export default function DetailDrawer({ company, categories, drawerMode, onClose,
               <span style={{ color: THEME.textMuted }}>Website</span>
               <div className="flex items-center gap-1">
                 <InlineEdit value={company.website || ''} onSave={(v) => handleFieldUpdate('website', v)} placeholder="—" />
-                {company.website && <a href={company.website} target="_blank" rel="noopener noreferrer" style={{ color: THEME.accent }}><ExternalLink size={12} /></a>}
+                {company.website && /^https?:\/\//i.test(company.website) && <a href={company.website} target="_blank" rel="noopener noreferrer" style={{ color: THEME.accent }}><ExternalLink size={12} /></a>}
               </div>
 
               <span style={{ color: THEME.textMuted }}>Address</span>
@@ -572,7 +572,11 @@ export default function DetailDrawer({ company, categories, drawerMode, onClose,
               {company.source_url && (
                 <>
                   <span style={{ color: THEME.textMuted }}>Source URL</span>
-                  <a href={company.source_url} target="_blank" rel="noopener noreferrer" className="text-sm truncate" style={{ color: THEME.accent }}>{company.source_url}</a>
+                  {/^https?:\/\//i.test(company.source_url) ? (
+                    <a href={company.source_url} target="_blank" rel="noopener noreferrer" className="text-sm truncate" style={{ color: THEME.accent }}>{company.source_url}</a>
+                  ) : (
+                    <span className="text-sm truncate" style={{ color: THEME.textSecondary }}>{company.source_url}</span>
+                  )}
                 </>
               )}
 

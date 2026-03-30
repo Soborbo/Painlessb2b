@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { Upload, Download, X } from 'lucide-react';
 import { THEME } from '../../lib/site-config';
 
@@ -16,9 +16,22 @@ interface PreviewData {
 
 export default function ImportExport({ onImportComplete, onError }: Props) {
   const fileRef = useRef<HTMLInputElement>(null);
+  const exportRef = useRef<HTMLDivElement>(null);
   const [preview, setPreview] = useState<PreviewData | null>(null);
   const [importing, setImporting] = useState(false);
   const [showExportMenu, setShowExportMenu] = useState(false);
+
+  // Close export menu on outside click
+  useEffect(() => {
+    if (!showExportMenu) return;
+    const handler = (e: MouseEvent) => {
+      if (exportRef.current && !exportRef.current.contains(e.target as Node)) {
+        setShowExportMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [showExportMenu]);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -31,8 +44,6 @@ export default function ImportExport({ onImportComplete, onError }: Props) {
 
       if (isCsv) {
         const lines = text.split(/\r?\n/).filter((l) => l.trim());
-        setPreview({ data: [], fileName: file.name, format: 'csv', rawCsv: text });
-        // Show line count minus header
         setPreview({ data: new Array(Math.max(0, lines.length - 1)), fileName: file.name, format: 'csv', rawCsv: text });
       } else {
         const data = JSON.parse(text);
@@ -134,7 +145,7 @@ export default function ImportExport({ onImportComplete, onError }: Props) {
         >
           <Upload size={18} />
         </button>
-        <div className="relative">
+        <div className="relative" ref={exportRef}>
           <button
             onClick={() => setShowExportMenu(!showExportMenu)}
             className="p-2 rounded-[6px] transition-all duration-200 cursor-pointer"

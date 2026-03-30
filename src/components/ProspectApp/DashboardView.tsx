@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { BarChart3, TrendingUp, PieChart, Activity } from 'lucide-react';
 import { STATUS_CONFIG } from '../../lib/constants';
 import { THEME } from '../../lib/site-config';
@@ -17,12 +17,20 @@ interface AnalyticsData {
 export default function DashboardView() {
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
-    fetch('/api/analytics')
-      .then((r) => r.json())
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
+    fetch('/api/analytics', { signal: controller.signal })
+      .then((r) => { if (!r.ok) throw new Error(); return r.json(); })
       .then((d) => { setData(d); setLoading(false); })
-      .catch(() => setLoading(false));
+      .catch((err) => { if (err?.name !== 'AbortError') { setLoading(false); setError(true); } });
+
+    return () => controller.abort();
   }, []);
 
   if (loading) {
@@ -37,9 +45,14 @@ export default function DashboardView() {
     );
   }
 
-  if (!data) return null;
+  if (error || !data) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <p className="text-sm" style={{ color: THEME.textSecondary }}>Failed to load analytics data.</p>
+      </div>
+    );
+  }
 
-  const totalEmails = data.emailStats.reduce((s, e) => s + e.count, 0);
   const sentEmails = data.emailStats.find((e) => e.status === 'sent')?.count || 0;
   const total = data.conversionFunnel.total || 1;
   const funnel = data.conversionFunnel;
@@ -52,7 +65,6 @@ export default function DashboardView() {
     { label: 'Partners', count: funnel.partners, color: '#10b981' },
   ];
 
-  // Bar chart helpers
   const maxMonthly = Math.max(...data.monthlyCreated.map((m) => m.count), 1);
 
   return (

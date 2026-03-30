@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { X, AlertTriangle, Loader2 } from 'lucide-react';
 import { THEME } from '../../lib/site-config';
 
@@ -20,26 +20,42 @@ export default function DuplicateDetector({ open, onClose, onSelectCompany, onDe
   const [duplicates, setDuplicates] = useState<DuplicatePair[]>([]);
   const [loading, setLoading] = useState(false);
   const [threshold, setThreshold] = useState(0.7);
+  const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     if (!open) return;
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
     setLoading(true);
-    fetch(`/api/duplicates?threshold=${threshold}`)
+    fetch(`/api/duplicates?threshold=${threshold}`, { signal: controller.signal })
       .then((r) => r.json())
       .then((data) => { setDuplicates(data); setLoading(false); })
-      .catch(() => { setLoading(false); onToast('Failed to check duplicates', 'error'); });
+      .catch((err) => {
+        if (err?.name !== 'AbortError') {
+          setLoading(false);
+          onToast('Failed to check duplicates', 'error');
+        }
+      });
+
+    return () => controller.abort();
   }, [open, threshold]);
 
   const handleDelete = async (id: string) => {
-    await onDeleteCompany(id);
-    setDuplicates((prev) => prev.filter((d) => d.a.id !== id && d.b.id !== id));
-    onToast('Duplicate removed', 'success');
+    try {
+      await onDeleteCompany(id);
+      setDuplicates((prev) => prev.filter((d) => d.a.id !== id && d.b.id !== id));
+      onToast('Duplicate removed', 'success');
+    } catch {
+      onToast('Failed to delete', 'error');
+    }
   };
 
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center" data-modal-overlay>
+    <div className="fixed inset-0 z-[60] flex items-center justify-center" data-modal-overlay role="dialog" aria-modal="true" aria-label="Duplicate detection">
       <div className="absolute inset-0 bg-black/60" onClick={onClose} />
       <div
         className="relative w-full max-w-2xl rounded-[14px] p-6 max-h-[80vh] overflow-y-auto"
@@ -50,7 +66,7 @@ export default function DuplicateDetector({ open, onClose, onSelectCompany, onDe
             <AlertTriangle size={20} style={{ color: '#f59e0b' }} />
             <h2 className="text-lg font-semibold" style={{ color: THEME.textPrimary }}>Duplicate Detection</h2>
           </div>
-          <button onClick={onClose} className="p-1 cursor-pointer" style={{ color: THEME.textSecondary }}>
+          <button onClick={onClose} className="p-1 cursor-pointer" style={{ color: THEME.textSecondary }} aria-label="Close">
             <X size={20} />
           </button>
         </div>

@@ -27,7 +27,7 @@ export default function TemplateManager({ open, onClose, onToast }: Props) {
     fetch('/api/custom-templates')
       .then((r) => r.json())
       .then(setTemplates)
-      .catch(() => {});
+      .catch(() => onToast('Failed to load templates', 'error'));
   }, [open]);
 
   const resetForm = () => {
@@ -42,38 +42,54 @@ export default function TemplateManager({ open, onClose, onToast }: Props) {
       return;
     }
 
-    if (editingId) {
-      const res = await fetch(`/api/custom-templates/${editingId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
-      });
-      if (res.ok) {
-        const updated = await res.json();
-        setTemplates((prev) => prev.map((t) => (t.id === editingId ? updated : t)));
-        onToast('Template updated', 'success');
-        resetForm();
+    try {
+      if (editingId) {
+        const res = await fetch(`/api/custom-templates/${editingId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(form),
+        });
+        if (res.ok) {
+          const updated = await res.json();
+          setTemplates((prev) => prev.map((t) => (t.id === editingId ? updated : t)));
+          onToast('Template updated', 'success');
+          resetForm();
+        } else {
+          const err = await res.json().catch(() => ({ error: 'Update failed' }));
+          onToast(err.error || 'Update failed', 'error');
+        }
+      } else {
+        const res = await fetch('/api/custom-templates', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(form),
+        });
+        if (res.ok) {
+          const created = await res.json();
+          setTemplates((prev) => [created, ...prev]);
+          onToast('Template created', 'success');
+          resetForm();
+        } else {
+          const err = await res.json().catch(() => ({ error: 'Create failed' }));
+          onToast(err.error || 'Create failed', 'error');
+        }
       }
-    } else {
-      const res = await fetch('/api/custom-templates', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
-      });
-      if (res.ok) {
-        const created = await res.json();
-        setTemplates((prev) => [created, ...prev]);
-        onToast('Template created', 'success');
-        resetForm();
-      }
+    } catch {
+      onToast('Failed to save template', 'error');
     }
   };
 
   const handleDelete = async (id: string) => {
-    const res = await fetch(`/api/custom-templates/${id}`, { method: 'DELETE' });
-    if (res.ok) {
-      setTemplates((prev) => prev.filter((t) => t.id !== id));
-      onToast('Template deleted', 'success');
+    try {
+      const res = await fetch(`/api/custom-templates/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        setTemplates((prev) => prev.filter((t) => t.id !== id));
+        onToast('Template deleted', 'success');
+      } else {
+        onToast('Failed to delete template', 'error');
+      }
+    } catch {
+      onToast('Failed to delete template', 'error');
     }
   };
 
@@ -86,7 +102,7 @@ export default function TemplateManager({ open, onClose, onToast }: Props) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center" data-modal-overlay>
+    <div className="fixed inset-0 z-[60] flex items-center justify-center" data-modal-overlay role="dialog" aria-modal="true" aria-label="Email templates">
       <div className="absolute inset-0 bg-black/60" onClick={onClose} />
       <div
         className="relative w-full max-w-2xl rounded-[14px] p-6 max-h-[85vh] overflow-y-auto"
@@ -94,7 +110,7 @@ export default function TemplateManager({ open, onClose, onToast }: Props) {
       >
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold" style={{ color: THEME.textPrimary }}>Email Templates</h2>
-          <button onClick={onClose} className="p-1 cursor-pointer" style={{ color: THEME.textSecondary }}>
+          <button onClick={onClose} className="p-1 cursor-pointer" style={{ color: THEME.textSecondary }} aria-label="Close">
             <X size={20} />
           </button>
         </div>
@@ -195,10 +211,10 @@ export default function TemplateManager({ open, onClose, onToast }: Props) {
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium" style={{ color: THEME.textPrimary }}>{tmpl.name}</span>
                 <div className="flex items-center gap-1">
-                  <button onClick={() => handleEdit(tmpl)} className="p-1 cursor-pointer" style={{ color: THEME.textSecondary }}>
+                  <button onClick={() => handleEdit(tmpl)} className="p-1 cursor-pointer" style={{ color: THEME.textSecondary }} aria-label="Edit template">
                     <Edit3 size={14} />
                   </button>
-                  <button onClick={() => handleDelete(tmpl.id)} className="p-1 cursor-pointer" style={{ color: '#ef4444' }}>
+                  <button onClick={() => handleDelete(tmpl.id)} className="p-1 cursor-pointer" style={{ color: '#ef4444' }} aria-label="Delete template">
                     <Trash2 size={14} />
                   </button>
                 </div>
