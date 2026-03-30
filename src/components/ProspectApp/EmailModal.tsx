@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { X, Send, ChevronDown, Loader2 } from 'lucide-react';
 import { EMAIL_TEMPLATES, TEMPLATE_NAMES } from '../../lib/email-templates';
 import { THEME } from '../../lib/site-config';
-import type { Company, EmailLog } from './types';
+import type { Company, EmailLog, CustomEmailTemplate } from './types';
 import type { TemplateName } from '../../lib/email-templates';
 
 interface Props {
@@ -13,14 +13,32 @@ interface Props {
   onToast: (msg: string, type: 'success' | 'error') => void;
 }
 
+function replacePlaceholders(text: string, company: Company): string {
+  return text
+    .replace(/\{\{company_name\}\}/g, company.name || '')
+    .replace(/\{\{contact_name\}\}/g, company.contact_name || 'there')
+    .replace(/\{\{category\}\}/g, company.category_name || '')
+    .replace(/\{\{your_name\}\}/g, 'Laszlo');
+}
+
 export default function EmailModal({ company, open, onClose, onSent, onToast }: Props) {
-  const [template, setTemplate] = useState<TemplateName>('intro');
+  const [template, setTemplate] = useState<string>('intro');
   const [toEmail, setToEmail] = useState('');
   const [subject, setSubject] = useState('');
   const [body, setBody] = useState('');
   const [sending, setSending] = useState(false);
   const [emailLog, setEmailLog] = useState<EmailLog[]>([]);
   const [showHistory, setShowHistory] = useState(false);
+  const [customTemplates, setCustomTemplates] = useState<CustomEmailTemplate[]>([]);
+
+  // Fetch custom templates
+  useEffect(() => {
+    if (!open) return;
+    fetch('/api/custom-templates')
+      .then((r) => r.json())
+      .then(setCustomTemplates)
+      .catch(() => {});
+  }, [open]);
 
   // Init fields from template
   useEffect(() => {
@@ -35,14 +53,26 @@ export default function EmailModal({ company, open, onClose, onSent, onToast }: 
       .catch(() => {});
   }, [open, company.id]);
 
-  const applyTemplate = (name: TemplateName) => {
+  const applyTemplate = (name: string) => {
     setTemplate(name);
-    const tmpl = EMAIL_TEMPLATES[name].generate({
-      companyName: company.name,
-      contactName: company.contact_name || '',
-    });
-    setSubject(tmpl.subject);
-    setBody(tmpl.body);
+
+    // Check built-in templates first
+    if (name in EMAIL_TEMPLATES) {
+      const tmpl = EMAIL_TEMPLATES[name as TemplateName].generate({
+        companyName: company.name,
+        contactName: company.contact_name || '',
+      });
+      setSubject(tmpl.subject);
+      setBody(tmpl.body);
+      return;
+    }
+
+    // Check custom templates
+    const custom = customTemplates.find((t) => t.id === name);
+    if (custom) {
+      setSubject(replacePlaceholders(custom.subject, company));
+      setBody(replacePlaceholders(custom.body, company));
+    }
   };
 
   const handleSend = async () => {
@@ -98,13 +128,22 @@ export default function EmailModal({ company, open, onClose, onSent, onToast }: 
             <label className="text-xs uppercase tracking-wider mb-1 block" style={{ color: THEME.textMuted }}>Template</label>
             <select
               value={template}
-              onChange={(e) => applyTemplate(e.target.value as TemplateName)}
+              onChange={(e) => applyTemplate(e.target.value)}
               className="w-full px-3 py-2 rounded-[6px] text-sm outline-none cursor-pointer"
               style={{ backgroundColor: THEME.elevated, border: `1px solid ${THEME.border}`, color: THEME.textPrimary }}
             >
-              {TEMPLATE_NAMES.map((name) => (
-                <option key={name} value={name}>{EMAIL_TEMPLATES[name].label}</option>
-              ))}
+              <optgroup label="Built-in">
+                {TEMPLATE_NAMES.map((name) => (
+                  <option key={name} value={name}>{EMAIL_TEMPLATES[name].label}</option>
+                ))}
+              </optgroup>
+              {customTemplates.length > 0 && (
+                <optgroup label="Custom Templates">
+                  {customTemplates.map((t) => (
+                    <option key={t.id} value={t.id}>{t.name}</option>
+                  ))}
+                </optgroup>
+              )}
             </select>
           </div>
 

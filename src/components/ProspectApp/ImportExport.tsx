@@ -10,29 +10,40 @@ interface Props {
 interface PreviewData {
   data: any[];
   fileName: string;
+  format: 'json' | 'csv';
+  rawCsv?: string;
 }
 
 export default function ImportExport({ onImportComplete, onError }: Props) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<PreviewData | null>(null);
   const [importing, setImporting] = useState(false);
+  const [showExportMenu, setShowExportMenu] = useState(false);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    const isCsv = file.name.endsWith('.csv');
+
     try {
       const text = await file.text();
-      const data = JSON.parse(text);
 
-      if (!Array.isArray(data)) {
-        onError('Import file must contain a JSON array');
-        return;
+      if (isCsv) {
+        const lines = text.split(/\r?\n/).filter((l) => l.trim());
+        setPreview({ data: [], fileName: file.name, format: 'csv', rawCsv: text });
+        // Show line count minus header
+        setPreview({ data: new Array(Math.max(0, lines.length - 1)), fileName: file.name, format: 'csv', rawCsv: text });
+      } else {
+        const data = JSON.parse(text);
+        if (!Array.isArray(data)) {
+          onError('Import file must contain a JSON array');
+          return;
+        }
+        setPreview({ data, fileName: file.name, format: 'json' });
       }
-
-      setPreview({ data, fileName: file.name });
     } catch {
-      onError('Invalid JSON file');
+      onError('Invalid file format');
     }
 
     if (fileRef.current) fileRef.current.value = '';
@@ -42,14 +53,24 @@ export default function ImportExport({ onImportComplete, onError }: Props) {
     if (!preview) return;
     setImporting(true);
     try {
-      const res = await fetch('/api/import', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(preview.data),
-      });
+      let res: Response;
+      if (preview.format === 'csv') {
+        res = await fetch('/api/import-csv', {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/csv' },
+          body: preview.rawCsv,
+        });
+      } else {
+        res = await fetch('/api/import', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(preview.data),
+        });
+      }
 
       if (!res.ok) {
-        onError('Import failed');
+        const err = await res.json().catch(() => ({ error: 'Import failed' }));
+        onError(err.error || 'Import failed');
         return;
       }
 
@@ -62,7 +83,8 @@ export default function ImportExport({ onImportComplete, onError }: Props) {
     setPreview(null);
   };
 
-  const handleExport = async () => {
+  const handleExportJson = async () => {
+    setShowExportMenu(false);
     try {
       const res = await fetch('/api/export');
       const data = await res.json();
@@ -78,13 +100,29 @@ export default function ImportExport({ onImportComplete, onError }: Props) {
     }
   };
 
+  const handleExportCsv = async () => {
+    setShowExportMenu(false);
+    try {
+      const res = await fetch('/api/export-csv');
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `prospects-export-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      onError('Export failed');
+    }
+  };
+
   return (
     <>
       <div className="flex items-center gap-1">
         <input
           ref={fileRef}
           type="file"
-          accept=".json"
+          accept=".json,.csv"
           onChange={handleFileSelect}
           className="hidden"
         />
@@ -92,18 +130,41 @@ export default function ImportExport({ onImportComplete, onError }: Props) {
           onClick={() => fileRef.current?.click()}
           className="p-2 rounded-[6px] transition-all duration-200 cursor-pointer"
           style={{ color: THEME.textSecondary }}
-          title="Import JSON"
+          title="Import JSON/CSV"
         >
           <Upload size={18} />
         </button>
-        <button
-          onClick={handleExport}
-          className="p-2 rounded-[6px] transition-all duration-200 cursor-pointer"
-          style={{ color: THEME.textSecondary }}
-          title="Export JSON"
-        >
-          <Download size={18} />
-        </button>
+        <div className="relative">
+          <button
+            onClick={() => setShowExportMenu(!showExportMenu)}
+            className="p-2 rounded-[6px] transition-all duration-200 cursor-pointer"
+            style={{ color: THEME.textSecondary }}
+            title="Export"
+          >
+            <Download size={18} />
+          </button>
+          {showExportMenu && (
+            <div
+              className="absolute right-0 top-full mt-1 rounded-[6px] py-1 min-w-[120px] shadow-lg z-20"
+              style={{ backgroundColor: THEME.surface, border: `1px solid ${THEME.border}` }}
+            >
+              <button
+                onClick={handleExportJson}
+                className="w-full text-left px-3 py-1.5 text-sm cursor-pointer"
+                style={{ color: THEME.textPrimary }}
+              >
+                Export JSON
+              </button>
+              <button
+                onClick={handleExportCsv}
+                className="w-full text-left px-3 py-1.5 text-sm cursor-pointer"
+                style={{ color: THEME.textPrimary }}
+              >
+                Export CSV
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Import preview modal */}
@@ -122,6 +183,9 @@ export default function ImportExport({ onImportComplete, onError }: Props) {
             </div>
             <p className="text-sm mb-2" style={{ color: THEME.textSecondary }}>
               File: {preview.fileName}
+            </p>
+            <p className="text-sm mb-1" style={{ color: THEME.textSecondary }}>
+              Format: <span className="font-mono uppercase">{preview.format}</span>
             </p>
             <p className="text-sm mb-4" style={{ color: THEME.textPrimary }}>
               Will import up to <strong className="font-mono">{preview.data.length}</strong> prospect{preview.data.length !== 1 ? 's' : ''}.

@@ -51,6 +51,25 @@ CREATE TABLE IF NOT EXISTS email_log (
   sent_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
+-- Activity log for audit trail
+CREATE TABLE IF NOT EXISTS activity_log (
+  id TEXT PRIMARY KEY,
+  company_id TEXT REFERENCES companies(id) ON DELETE CASCADE,
+  action TEXT NOT NULL,
+  details TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+-- Custom email templates
+CREATE TABLE IF NOT EXISTS custom_email_templates (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  subject TEXT NOT NULL,
+  body TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
 -- Seed default categories
 INSERT OR IGNORE INTO categories (id, name, color) VALUES
   ('cat-solicitor', 'Solicitor', '#818cf8'),

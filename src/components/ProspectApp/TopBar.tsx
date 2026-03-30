@@ -1,4 +1,4 @@
-import { MapPin, List, Columns3, Flame, Bell, Plus, LogOut } from 'lucide-react';
+import { MapPin, List, Columns3, Flame, Bell, Plus, LogOut, BarChart3, Copy, FileText, History } from 'lucide-react';
 import { STATUS_CONFIG } from '../../lib/constants';
 import { THEME, SITE_CONFIG } from '../../lib/site-config';
 import type { AppState, Action, Company, View } from './types';
@@ -9,6 +9,9 @@ interface Props {
   dispatch: React.Dispatch<Action>;
   filteredCompanies: Company[];
   onRefresh: () => void;
+  onOpenDuplicates: () => void;
+  onOpenTemplates: () => void;
+  onOpenActivityLog: () => void;
 }
 
 const VIEW_OPTIONS: { key: View; label: string; icon: React.ReactNode }[] = [
@@ -16,9 +19,10 @@ const VIEW_OPTIONS: { key: View; label: string; icon: React.ReactNode }[] = [
   { key: 'list', label: 'List', icon: <List size={16} /> },
   { key: 'kanban', label: 'Kanban', icon: <Columns3 size={16} /> },
   { key: 'heatmap', label: 'Heatmap', icon: <Flame size={16} /> },
+  { key: 'dashboard', label: 'Dashboard', icon: <BarChart3 size={16} /> },
 ];
 
-export default function TopBar({ state, dispatch, filteredCompanies, onRefresh }: Props) {
+export default function TopBar({ state, dispatch, filteredCompanies, onRefresh, onOpenDuplicates, onOpenTemplates, onOpenActivityLog }: Props) {
   const total = state.companies.length;
   const newCount = state.companies.filter((c) => c.status === 'new').length;
   const inProgress = state.companies.filter((c) =>
@@ -115,6 +119,36 @@ export default function TopBar({ state, dispatch, filteredCompanies, onRefresh }
               {state.overdueCount > 9 ? '9+' : state.overdueCount}
             </span>
           )}
+        </button>
+
+        {/* Activity log */}
+        <button
+          onClick={onOpenActivityLog}
+          className="p-2 rounded-[6px] transition-all duration-200 cursor-pointer"
+          style={{ color: THEME.textSecondary }}
+          title="Activity Log"
+        >
+          <History size={18} />
+        </button>
+
+        {/* Duplicate detector */}
+        <button
+          onClick={onOpenDuplicates}
+          className="p-2 rounded-[6px] transition-all duration-200 cursor-pointer"
+          style={{ color: THEME.textSecondary }}
+          title="Find Duplicates"
+        >
+          <Copy size={18} />
+        </button>
+
+        {/* Template manager */}
+        <button
+          onClick={onOpenTemplates}
+          className="p-2 rounded-[6px] transition-all duration-200 cursor-pointer"
+          style={{ color: THEME.textSecondary }}
+          title="Email Templates"
+        >
+          <FileText size={18} />
         </button>
 
         <ImportExport
