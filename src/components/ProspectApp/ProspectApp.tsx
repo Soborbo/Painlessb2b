@@ -1,18 +1,23 @@
-import { useReducer, useEffect, useCallback, useMemo } from 'react';
+import { useReducer, useEffect, useCallback, useMemo, useState } from 'react';
 import { THEME } from '../../lib/site-config';
-import type { AppState, Action, Company, Filters, SortBy } from './types';
+import type { AppState, Action, Company, Filters, SortBy, Status } from './types';
 import TopBar from './TopBar';
 import Sidebar from './Sidebar';
 import MapView from './MapView';
 import HeatmapView from './HeatmapView';
 import ListView from './ListView';
 import KanbanView from './KanbanView';
+import DashboardView from './DashboardView';
 import ListPanel from './ListPanel';
 import DetailDrawer from './DetailDrawer';
 import EmailModal from './EmailModal';
 import Toast from './Toast';
 import EmptyState from './EmptyState';
 import CategoryManager from './CategoryManager';
+import BulkActions from './BulkActions';
+import DuplicateDetector from './DuplicateDetector';
+import TemplateManager from './TemplateManager';
+import ActivityLog from './ActivityLog';
 
 const initialState: AppState = {
   companies: [],
@@ -37,6 +42,8 @@ const initialState: AppState = {
   isLoading: true,
   toast: null,
   categoryManagerOpen: false,
+  selectedIds: new Set<string>(),
+  bulkActionOpen: false,
 };
 
 function toggleInArray(arr: string[], value: string): string[] {
@@ -122,6 +129,18 @@ function reducer(state: AppState, action: Action): AppState {
       return { ...state, toast: action.payload };
     case 'SET_CATEGORY_MANAGER':
       return { ...state, categoryManagerOpen: action.payload };
+    case 'TOGGLE_SELECTED_ID': {
+      const next = new Set(state.selectedIds);
+      if (next.has(action.payload)) next.delete(action.payload);
+      else next.add(action.payload);
+      return { ...state, selectedIds: next };
+    }
+    case 'SET_SELECTED_IDS':
+      return { ...state, selectedIds: action.payload };
+    case 'CLEAR_SELECTED_IDS':
+      return { ...state, selectedIds: new Set(), bulkActionOpen: false };
+    case 'SET_BULK_ACTION':
+      return { ...state, bulkActionOpen: action.payload };
     default:
       return state;
   }
@@ -152,6 +171,9 @@ function applyFilters(companies: Company[], filters: Filters): Company[] {
 
 export default function ProspectApp() {
   const [state, dispatch] = useReducer(reducer, initialState);
+  const [duplicatesOpen, setDuplicatesOpen] = useState(false);
+  const [templatesOpen, setTemplatesOpen] = useState(false);
+  const [activityLogOpen, setActivityLogOpen] = useState(false);
 
   const fetchData = useCallback(async () => {
     try {
@@ -277,6 +299,12 @@ export default function ProspectApp() {
         const created = await res.json();
         dispatch({ type: 'ADD_COMPANY', payload: created });
         dispatch({ type: 'SET_TOAST', payload: { message: 'Prospect created', type: 'success' } });
+        // Log activity
+        fetch('/api/activity-log', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ company_id: created.id, action: 'company_created', details: created.name }),
+        }).catch(() => {});
       }
     } catch {
       dispatch({ type: 'SET_TOAST', payload: { message: 'Failed to create', type: 'error' } });
@@ -289,6 +317,11 @@ export default function ProspectApp() {
       if (res.ok) {
         dispatch({ type: 'REMOVE_COMPANY', payload: id });
         dispatch({ type: 'SET_TOAST', payload: { message: 'Prospect deleted', type: 'success' } });
+        fetch('/api/activity-log', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'company_deleted', details: id }),
+        }).catch(() => {});
       } else {
         dispatch({ type: 'SET_TOAST', payload: { message: 'Failed to delete', type: 'error' } });
       }
@@ -300,6 +333,58 @@ export default function ProspectApp() {
   const handleSortChange = useCallback((by: SortBy) => {
     dispatch({ type: 'TOGGLE_SORT', payload: by });
   }, []);
+
+  // Kanban drag-and-drop status update
+  const handleKanbanStatusUpdate = useCallback(async (companyId: string, newStatus: Status) => {
+    try {
+      // Fetch current status from server to avoid stale closure
+      const res = await fetch(`/api/companies/${companyId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        dispatch({ type: 'UPDATE_COMPANY', payload: updated });
+        fetch('/api/notes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ company_id: companyId, body: `Status changed to ${newStatus} (drag & drop)` }),
+        }).catch(() => {});
+        fetch('/api/activity-log', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ company_id: companyId, action: 'status_changed', details: `→ ${newStatus} (kanban)` }),
+        }).catch(() => {});
+      }
+    } catch {
+      dispatch({ type: 'SET_TOAST', payload: { message: 'Failed to update status', type: 'error' } });
+    }
+  }, []);
+
+  // Bulk action handler
+  const handleBulkAction = useCallback(async (action: string, value?: string) => {
+    const ids = Array.from(state.selectedIds);
+    if (ids.length === 0) return;
+
+    try {
+      const res = await fetch('/api/companies/bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids, action, value }),
+      });
+      if (res.ok) {
+        const result = await res.json();
+        dispatch({ type: 'SET_TOAST', payload: { message: `${result.affected} prospects updated`, type: 'success' } });
+        dispatch({ type: 'CLEAR_SELECTED_IDS' });
+        await fetchData();
+      } else {
+        dispatch({ type: 'SET_TOAST', payload: { message: 'Bulk action failed', type: 'error' } });
+      }
+    } catch {
+      dispatch({ type: 'SET_TOAST', payload: { message: 'Bulk action failed', type: 'error' } });
+    }
+  }, [state.selectedIds, fetchData]);
 
   return (
     <div className="h-screen flex flex-col" style={{ backgroundColor: THEME.base }}>
@@ -321,21 +406,24 @@ export default function ProspectApp() {
         dispatch={dispatch}
         filteredCompanies={filteredCompanies}
         onRefresh={fetchData}
+        onOpenDuplicates={() => setDuplicatesOpen(true)}
+        onOpenTemplates={() => setTemplatesOpen(true)}
+        onOpenActivityLog={() => setActivityLogOpen(true)}
       />
       <div className="flex flex-1 overflow-hidden">
-        <Sidebar
-          state={state}
-          dispatch={dispatch}
-          filteredCompanies={filteredCompanies}
-        />
+        {state.view !== 'dashboard' && (
+          <Sidebar
+            state={state}
+            dispatch={dispatch}
+            filteredCompanies={filteredCompanies}
+          />
+        )}
         <main className="flex-1 overflow-hidden flex">
           {state.isLoading ? (
             <div className="flex-1 flex">
-              {/* Main skeleton */}
               <div className="flex-1 p-4">
                 <div className="h-full rounded-[10px] animate-pulse" style={{ backgroundColor: THEME.elevated }} />
               </div>
-              {/* List panel skeleton */}
               <div className="w-[380px] p-4 space-y-3" style={{ borderLeft: `1px solid ${THEME.border}` }}>
                 {[...Array(8)].map((_, i) => (
                   <div key={i} className="space-y-2 p-3 rounded-[6px] animate-pulse" style={{ backgroundColor: THEME.elevated }}>
@@ -345,6 +433,8 @@ export default function ProspectApp() {
                 ))}
               </div>
             </div>
+          ) : state.view === 'dashboard' ? (
+            <DashboardView />
           ) : filteredCompanies.length === 0 ? (
             <EmptyState
               hasFilters={hasActiveFilters}
@@ -376,12 +466,16 @@ export default function ProspectApp() {
                   companies={filteredCompanies}
                   totalCount={state.companies.length}
                   onSelectCompany={handleSelectCompany}
+                  selectedIds={state.selectedIds}
+                  onToggleSelect={(id) => dispatch({ type: 'TOGGLE_SELECTED_ID', payload: id })}
+                  onSelectAll={(ids) => dispatch({ type: 'SET_SELECTED_IDS', payload: new Set(ids) })}
                 />
               )}
               {state.view === 'kanban' && (
                 <KanbanView
                   companies={filteredCompanies}
                   onSelectCompany={handleSelectCompany}
+                  onUpdateStatus={handleKanbanStatusUpdate}
                 />
               )}
               {(state.view === 'map' || state.view === 'heatmap') && (
@@ -399,6 +493,14 @@ export default function ProspectApp() {
           )}
         </main>
       </div>
+
+      {/* Bulk actions bar */}
+      <BulkActions
+        selectedCount={state.selectedIds.size}
+        categories={state.categories}
+        onBulkAction={handleBulkAction}
+        onClear={() => dispatch({ type: 'CLEAR_SELECTED_IDS' })}
+      />
 
       <Toast
         toast={state.toast}
@@ -434,17 +536,39 @@ export default function ProspectApp() {
       />
 
       {state.emailModalOpen && state.selectedCompanyId && (() => {
-        const sc = state.companies.find((c) => c.id === state.selectedCompanyId);
-        return sc ? (
+        const emailCompany = state.companies.find((c) => c.id === state.selectedCompanyId);
+        if (!emailCompany) return null;
+        return (
           <EmailModal
-            company={sc}
-            open={state.emailModalOpen}
+            company={emailCompany}
+            open
             onClose={() => dispatch({ type: 'SET_EMAIL_MODAL', payload: false })}
             onSent={fetchData}
             onToast={(msg, type) => dispatch({ type: 'SET_TOAST', payload: { message: msg, type } })}
           />
-        ) : null;
+        );
       })()}
+
+      {/* Modals */}
+      <DuplicateDetector
+        open={duplicatesOpen}
+        onClose={() => setDuplicatesOpen(false)}
+        onSelectCompany={handleSelectCompany}
+        onDeleteCompany={handleDeleteCompany}
+        onToast={(msg, type) => dispatch({ type: 'SET_TOAST', payload: { message: msg, type } })}
+      />
+
+      <TemplateManager
+        open={templatesOpen}
+        onClose={() => setTemplatesOpen(false)}
+        onToast={(msg, type) => dispatch({ type: 'SET_TOAST', payload: { message: msg, type } })}
+      />
+
+      <ActivityLog
+        open={activityLogOpen}
+        onClose={() => setActivityLogOpen(false)}
+        onSelectCompany={handleSelectCompany}
+      />
     </div>
   );
 }

@@ -51,7 +51,33 @@ export interface EmailLog {
 
 export type Status = 'new' | 'contacted' | 'follow_up' | 'in_conversation' | 'partner' | 'rejected' | 'not_interested';
 export type Priority = 'high' | 'medium' | 'low';
-export type View = 'map' | 'list' | 'kanban' | 'heatmap';
+export interface ActivityLogEntry {
+  id: string;
+  company_id: string | null;
+  action: string;
+  details: string | null;
+  created_at: string;
+  company_name?: string;
+}
+
+export interface CustomEmailTemplate {
+  id: string;
+  name: string;
+  subject: string;
+  body: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DuplicateCandidate {
+  id: string;
+  name: string;
+  postcode: string | null;
+  address: string | null;
+  score: number;
+}
+
+export type View = 'map' | 'list' | 'kanban' | 'heatmap' | 'dashboard';
 export type HeatmapMode = 'density' | 'activity';
 export type SortBy = 'name' | 'status' | 'priority' | 'updated' | 'follow_up';
 export type DrawerMode = 'view' | 'create';
@@ -86,6 +112,8 @@ export interface AppState {
   isLoading: boolean;
   toast: ToastData | null;
   categoryManagerOpen: boolean;
+  selectedIds: Set<string>;
+  bulkActionOpen: boolean;
 }
 
 export type Action =
@@ -118,4 +146,8 @@ export type Action =
   | { type: 'TOGGLE_SORT'; payload: SortBy }
   | { type: 'SET_OVERDUE_COUNT'; payload: number }
   | { type: 'SET_TOAST'; payload: ToastData | null }
-  | { type: 'SET_CATEGORY_MANAGER'; payload: boolean };
+  | { type: 'SET_CATEGORY_MANAGER'; payload: boolean }
+  | { type: 'TOGGLE_SELECTED_ID'; payload: string }
+  | { type: 'SET_SELECTED_IDS'; payload: Set<string> }
+  | { type: 'CLEAR_SELECTED_IDS' }
+  | { type: 'SET_BULK_ACTION'; payload: boolean };

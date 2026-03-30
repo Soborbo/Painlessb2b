@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { X, Trash2, Copy, ExternalLink, Mail, Phone, ChevronDown } from 'lucide-react';
+import { X, Trash2, Copy, ExternalLink, Mail, Phone, ChevronDown, Calendar } from 'lucide-react';
 import { STATUS_CONFIG, PRIORITY_CONFIG, STATUSES } from '../../lib/constants';
 import { THEME } from '../../lib/site-config';
 import { formatDate, formatRelativeTime } from '../../lib/utils';
@@ -8,6 +8,7 @@ import StatusBadge from './StatusBadge';
 import PriorityBadge from './PriorityBadge';
 import NoteTimeline from './NoteTimeline';
 import FollowUpPicker from './FollowUpPicker';
+import AddressAutocomplete from './AddressAutocomplete';
 
 interface Props {
   company: Company | null;
@@ -103,6 +104,28 @@ function InlineEdit({ value, onSave, placeholder, type = 'text' }: {
   );
 }
 
+function buildGoogleCalendarUrl(company: Company): string {
+  if (!company.follow_up_date) return '';
+  const date = company.follow_up_date.replace(/-/g, '');
+  // All-day event
+  const endDate = new Date(company.follow_up_date);
+  endDate.setDate(endDate.getDate() + 1);
+  const endStr = endDate.toISOString().slice(0, 10).replace(/-/g, '');
+
+  const params = new URLSearchParams({
+    action: 'TEMPLATE',
+    text: `Follow up: ${company.name}`,
+    dates: `${date}/${endStr}`,
+    details: `Follow up with ${company.name}${company.contact_name ? ` (${company.contact_name})` : ''}${company.phone ? `\nPhone: ${company.phone}` : ''}${company.contact_email ? `\nEmail: ${company.contact_email}` : ''}`,
+  });
+
+  if (company.address) {
+    params.set('location', `${company.address}${company.postcode ? `, ${company.postcode}` : ''}`);
+  }
+
+  return `https://calendar.google.com/calendar/render?${params.toString()}`;
+}
+
 export default function DetailDrawer({ company, categories, drawerMode, onClose, onUpdate, onCreate, onDelete, onOpenEmail, onToast }: Props) {
   const [notes, setNotes] = useState<Note[]>([]);
   const [showStatusMenu, setShowStatusMenu] = useState(false);
@@ -136,7 +159,6 @@ export default function DetailDrawer({ company, categories, drawerMode, onClose,
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        // Don't close drawer if a modal (email, etc.) is open on top
         const modal = document.querySelector('[data-modal-overlay]');
         if (modal) return;
         onClose();
@@ -162,8 +184,14 @@ export default function DetailDrawer({ company, categories, drawerMode, onClose,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ company_id: company.id, body: `Status changed from ${STATUS_CONFIG[oldStatus].label} to ${STATUS_CONFIG[status].label}` }),
     });
+    // Log activity
+    fetch('/api/activity-log', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ company_id: company.id, action: 'status_changed', details: `${STATUS_CONFIG[oldStatus].label} → ${STATUS_CONFIG[status].label}` }),
+    }).catch(() => {});
     const res = await fetch(`/api/notes/${company.id}`);
-    setNotes(await res.json());
+    if (res.ok) setNotes(await res.json());
   }, [company, onUpdate]);
 
   const handleQuickAction = useCallback(async (action: { label: string; status: Status; showFollowUp?: boolean }) => {
@@ -178,8 +206,14 @@ export default function DetailDrawer({ company, categories, drawerMode, onClose,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ company_id: company.id, body }),
     });
+    // Log activity
+    fetch('/api/activity-log', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ company_id: company.id, action: 'note_added', details: body.slice(0, 100) }),
+    }).catch(() => {});
     const res = await fetch(`/api/notes/${company.id}`);
-    setNotes(await res.json());
+    if (res.ok) setNotes(await res.json());
   }, [company]);
 
   const handleDeleteNote = useCallback(async (noteId: string) => {
@@ -198,6 +232,51 @@ export default function DetailDrawer({ company, categories, drawerMode, onClose,
       .then(() => onToast('Copied', 'success'))
       .catch(() => onToast('Failed to copy', 'error'));
   }, [onToast]);
+
+  const handleAddressSelect = useCallback((details: {
+    lat: number | null; lng: number | null; address: string | null;
+    name: string | null; phone: string | null; website: string | null; place_id: string;
+  }) => {
+    if (drawerMode === 'create') {
+      setCreateForm((f) => ({
+        ...f,
+        ...(details.address && { address: details.address }),
+        ...(details.lat != null && { lat: details.lat }),
+        ...(details.lng != null && { lng: details.lng }),
+        ...(details.phone && !f.phone && { phone: details.phone }),
+        ...(details.website && !f.website && { website: details.website }),
+        ...(details.name && !f.name && { name: details.name }),
+        google_place_id: details.place_id,
+      }));
+    } else if (company) {
+      const fields: Partial<Company> = {};
+      if (details.address) fields.address = details.address;
+      if (details.lat != null) fields.lat = details.lat;
+      if (details.lng != null) fields.lng = details.lng;
+      if (details.phone && !company.phone) fields.phone = details.phone;
+      if (details.website && !company.website) fields.website = details.website;
+      fields.google_place_id = details.place_id;
+      onUpdate(company.id, fields);
+    }
+  }, [drawerMode, company, onUpdate]);
+
+  const handleGeocodeAddress = useCallback(async () => {
+    if (!company) return;
+    const addr = [company.address, company.postcode].filter(Boolean).join(', ');
+    if (!addr) { onToast('No address to geocode', 'error'); return; }
+    try {
+      const res = await fetch(`/api/geocode?address=${encodeURIComponent(addr)}`);
+      const data = await res.json();
+      if (data.lat != null && data.lng != null) {
+        await onUpdate(company.id, { lat: data.lat, lng: data.lng });
+        onToast('Coordinates updated', 'success');
+      } else {
+        onToast('Could not geocode address', 'error');
+      }
+    } catch {
+      onToast('Geocoding failed', 'error');
+    }
+  }, [company, onUpdate, onToast]);
 
   const handleCreate = useCallback(async () => {
     if (!createForm.name) {
@@ -224,6 +303,13 @@ export default function DetailDrawer({ company, categories, drawerMode, onClose,
               <h2 className="text-lg font-semibold" style={{ color: THEME.textPrimary }}>Add Prospect</h2>
               <button onClick={onClose} className="p-1 cursor-pointer" style={{ color: THEME.textSecondary }}><X size={20} /></button>
             </div>
+
+            {/* Google Places Search */}
+            <div>
+              <label className="text-xs uppercase tracking-wider mb-1 block" style={{ color: THEME.textMuted }}>Search Business</label>
+              <AddressAutocomplete onSelect={handleAddressSelect} />
+            </div>
+
             {(['name', 'address', 'postcode', 'phone', 'website', 'generic_email', 'contact_name', 'contact_email', 'contact_phone'] as const).map((field) => (
               <div key={field}>
                 <label className="text-xs uppercase tracking-wider mb-1 block" style={{ color: THEME.textMuted }}>{field.replace(/_/g, ' ')}</label>
@@ -276,6 +362,7 @@ export default function DetailDrawer({ company, categories, drawerMode, onClose,
   const email = company.contact_email || company.generic_email;
   const phone = company.contact_phone || company.phone;
   const quickActions = QUICK_ACTIONS[company.status] || [];
+  const calendarUrl = buildGoogleCalendarUrl(company);
 
   return (
     <>
@@ -343,6 +430,21 @@ export default function DetailDrawer({ company, categories, drawerMode, onClose,
             </div>
           </div>
 
+          {/* Google Places Search (for existing companies) */}
+          <div>
+            <h3 className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: THEME.textMuted }}>Lookup Address</h3>
+            <AddressAutocomplete onSelect={handleAddressSelect} />
+            {company.address && !company.lat && (
+              <button
+                onClick={handleGeocodeAddress}
+                className="mt-2 text-xs px-3 py-1 rounded-[6px] cursor-pointer"
+                style={{ backgroundColor: THEME.accent + '20', color: THEME.accent }}
+              >
+                Geocode current address
+              </button>
+            )}
+          </div>
+
           {/* Contact info */}
           <div className="space-y-2">
             <h3 className="text-xs font-semibold uppercase tracking-wider" style={{ color: THEME.textMuted }}>Contact</h3>
@@ -381,7 +483,7 @@ export default function DetailDrawer({ company, categories, drawerMode, onClose,
               <span style={{ color: THEME.textMuted }}>Website</span>
               <div className="flex items-center gap-1">
                 <InlineEdit value={company.website || ''} onSave={(v) => handleFieldUpdate('website', v)} placeholder="—" />
-                {company.website && <a href={company.website} target="_blank" rel="noopener noreferrer" style={{ color: THEME.accent }}><ExternalLink size={12} /></a>}
+                {company.website && /^https?:\/\//i.test(company.website) && <a href={company.website} target="_blank" rel="noopener noreferrer" style={{ color: THEME.accent }}><ExternalLink size={12} /></a>}
               </div>
 
               <span style={{ color: THEME.textMuted }}>Address</span>
@@ -434,6 +536,19 @@ export default function DetailDrawer({ company, categories, drawerMode, onClose,
               currentDate={company.follow_up_date}
               onChange={handleFollowUpChange}
             />
+            {/* Google Calendar button */}
+            {company.follow_up_date && calendarUrl && (
+              <a
+                href={calendarUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-xs px-3 py-1.5 rounded-[6px] cursor-pointer transition-colors"
+                style={{ backgroundColor: THEME.elevated, border: `1px solid ${THEME.border}`, color: THEME.accent }}
+              >
+                <Calendar size={14} />
+                Add to Google Calendar
+              </a>
+            )}
           </div>
 
           {/* Details */}
@@ -457,7 +572,11 @@ export default function DetailDrawer({ company, categories, drawerMode, onClose,
               {company.source_url && (
                 <>
                   <span style={{ color: THEME.textMuted }}>Source URL</span>
-                  <a href={company.source_url} target="_blank" rel="noopener noreferrer" className="text-sm truncate" style={{ color: THEME.accent }}>{company.source_url}</a>
+                  {/^https?:\/\//i.test(company.source_url) ? (
+                    <a href={company.source_url} target="_blank" rel="noopener noreferrer" className="text-sm truncate" style={{ color: THEME.accent }}>{company.source_url}</a>
+                  ) : (
+                    <span className="text-sm truncate" style={{ color: THEME.textSecondary }}>{company.source_url}</span>
+                  )}
                 </>
               )}
 
@@ -465,6 +584,13 @@ export default function DetailDrawer({ company, categories, drawerMode, onClose,
                 <>
                   <span style={{ color: THEME.textMuted }}>Place ID</span>
                   <span className="text-xs font-mono truncate" style={{ color: THEME.textSecondary }}>{company.google_place_id}</span>
+                </>
+              )}
+
+              {(company.lat != null && company.lng != null) && (
+                <>
+                  <span style={{ color: THEME.textMuted }}>Coordinates</span>
+                  <span className="text-xs font-mono" style={{ color: THEME.textSecondary }}>{company.lat.toFixed(5)}, {company.lng.toFixed(5)}</span>
                 </>
               )}
 
