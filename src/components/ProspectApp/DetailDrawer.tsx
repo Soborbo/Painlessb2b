@@ -9,6 +9,7 @@ import PriorityBadge from './PriorityBadge';
 import NoteTimeline from './NoteTimeline';
 import FollowUpPicker from './FollowUpPicker';
 import AddressAutocomplete from './AddressAutocomplete';
+import ContactsSection from './ContactsSection';
 
 interface Props {
   company: Company | null;
@@ -18,6 +19,7 @@ interface Props {
   onUpdate: (id: string, fields: Partial<Company>) => Promise<void>;
   onCreate: (fields: Partial<Company>) => Promise<void>;
   onDelete: (id: string) => void;
+  onRefresh: (id: string) => Promise<void>;
   onOpenEmail: () => void;
   onToast: (msg: string, type: 'success' | 'error') => void;
 }
@@ -126,7 +128,7 @@ function buildGoogleCalendarUrl(company: Company): string {
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
 }
 
-export default function DetailDrawer({ company, categories, drawerMode, onClose, onUpdate, onCreate, onDelete, onOpenEmail, onToast }: Props) {
+export default function DetailDrawer({ company, categories, drawerMode, onClose, onUpdate, onCreate, onDelete, onRefresh, onOpenEmail, onToast }: Props) {
   const [notes, setNotes] = useState<Note[]>([]);
   const [showStatusMenu, setShowStatusMenu] = useState(false);
   const [showFollowUp, setShowFollowUp] = useState(false);
@@ -445,38 +447,31 @@ export default function DetailDrawer({ company, categories, drawerMode, onClose,
             )}
           </div>
 
-          {/* Contact info */}
+          {/* Contacts — multiple contacts per company */}
+          <ContactsSection
+            companyId={company.id}
+            onToast={onToast}
+            onContactsChanged={() => onRefresh(company.id)}
+          />
+
+          {/* Company info */}
           <div className="space-y-2">
-            <h3 className="text-xs font-semibold uppercase tracking-wider" style={{ color: THEME.textMuted }}>Contact</h3>
+            <h3 className="text-xs font-semibold uppercase tracking-wider" style={{ color: THEME.textMuted }}>Company</h3>
             <div className="grid grid-cols-[100px_1fr] gap-y-1.5 gap-x-2 text-sm">
-              <span style={{ color: THEME.textMuted }}>Name</span>
-              <InlineEdit value={company.contact_name || ''} onSave={(v) => handleFieldUpdate('contact_name', v)} placeholder="—" />
-
-              <span style={{ color: THEME.textMuted }}>Email</span>
-              <div className="flex items-center gap-1">
-                <InlineEdit value={company.contact_email || ''} onSave={(v) => handleFieldUpdate('contact_email', v)} placeholder="—" />
-                {company.contact_email && (
-                  <>
-                    <a href={`mailto:${company.contact_email}`} style={{ color: THEME.accent }}><Mail size={12} /></a>
-                    <button onClick={() => handleCopyEmail(company.contact_email!)} className="cursor-pointer" style={{ color: THEME.accent }}><Copy size={12} /></button>
-                  </>
-                )}
-              </div>
-
-              <span style={{ color: THEME.textMuted }}>Phone</span>
-              <div className="flex items-center gap-1">
-                <InlineEdit value={company.contact_phone || ''} onSave={(v) => handleFieldUpdate('contact_phone', v)} placeholder="—" />
-                {company.contact_phone && <a href={`tel:${company.contact_phone}`} style={{ color: THEME.accent }}><Phone size={12} /></a>}
-              </div>
-
               <span style={{ color: THEME.textMuted }}>Company Ph</span>
-              <InlineEdit value={company.phone || ''} onSave={(v) => handleFieldUpdate('phone', v)} placeholder="—" />
+              <div className="flex items-center gap-1">
+                <InlineEdit value={company.phone || ''} onSave={(v) => handleFieldUpdate('phone', v)} placeholder="—" />
+                {company.phone && <a href={`tel:${company.phone}`} style={{ color: THEME.accent }}><Phone size={12} /></a>}
+              </div>
 
               <span style={{ color: THEME.textMuted }}>Gen. Email</span>
               <div className="flex items-center gap-1">
                 <InlineEdit value={company.generic_email || ''} onSave={(v) => handleFieldUpdate('generic_email', v)} placeholder="—" />
                 {company.generic_email && (
-                  <button onClick={() => handleCopyEmail(company.generic_email!)} className="cursor-pointer" style={{ color: THEME.accent }}><Copy size={12} /></button>
+                  <>
+                    <a href={`mailto:${company.generic_email}`} style={{ color: THEME.accent }}><Mail size={12} /></a>
+                    <button onClick={() => handleCopyEmail(company.generic_email!)} className="cursor-pointer" style={{ color: THEME.accent }}><Copy size={12} /></button>
+                  </>
                 )}
               </div>
 
