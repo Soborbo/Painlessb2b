@@ -4,8 +4,9 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build && node scripts/fix-wrangler.mjs",
-    "preview": "astro preview"
+    "build": "astro build",
+    "preview": "astro preview",
+    "deploy": "astro build && wrangler deploy -c ./dist/server/wrangler.json"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^13.1.3",
