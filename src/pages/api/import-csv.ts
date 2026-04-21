@@ -182,6 +182,22 @@ export const POST: APIRoute = async ({ request }) => {
         now
       ).run();
 
+      // Seed a primary contact row if any contact data was provided.
+      if (row.contact_name || row.contact_email || row.contact_phone) {
+        await db.prepare(
+          `INSERT INTO contacts (id, company_id, name, email, phone, is_primary, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, 1, ?, ?)`
+        ).bind(
+          generateId(),
+          companyId,
+          row.contact_name || null,
+          row.contact_email || null,
+          row.contact_phone || null,
+          now,
+          now
+        ).run();
+      }
+
       imported++;
     } catch {
       errored++;
