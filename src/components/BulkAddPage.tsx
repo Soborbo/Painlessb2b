@@ -5,21 +5,21 @@ import { THEME, SITE_CONFIG } from '../lib/site-config';
 // Column order the user pastes, left to right. Must match
 // /api/import-csv field names exactly.
 const COLUMNS = [
-  { key: 'name', label: 'Név', required: true },
-  { key: 'address', label: 'Cím', required: false },
-  { key: 'postcode', label: 'Irányítószám', required: false },
-  { key: 'phone', label: 'Cég telefon', required: false },
-  { key: 'website', label: 'Weboldal', required: false },
-  { key: 'generic_email', label: 'Általános email', required: false },
-  { key: 'contact_name', label: 'Kontakt név', required: false },
-  { key: 'contact_email', label: 'Kontakt email', required: false },
-  { key: 'contact_phone', label: 'Kontakt telefon', required: false },
-  { key: 'category', label: 'Kategória', required: false },
+  { key: 'name', label: 'Name', required: true },
+  { key: 'address', label: 'Address', required: false },
+  { key: 'postcode', label: 'Postcode', required: false },
+  { key: 'phone', label: 'Company phone', required: false },
+  { key: 'website', label: 'Website', required: false },
+  { key: 'generic_email', label: 'Generic email', required: false },
+  { key: 'contact_name', label: 'Contact name', required: false },
+  { key: 'contact_email', label: 'Contact email', required: false },
+  { key: 'contact_phone', label: 'Contact phone', required: false },
+  { key: 'category', label: 'Category', required: false },
 ] as const;
 
 const EXAMPLE = [
-  'Kovács Jogi Kft., Budapest Váci út 1, 1132, +36 1 234 5678, https://kovacsjogi.hu, info@kovacsjogi.hu, Kovács Anna, anna@kovacsjogi.hu, +36 30 111 2222, Solicitor',
-  'Nagy Ingatlan Bt., Budapest Bajcsy 12, 1051, +36 1 345 6789, https://nagyingatlan.hu, hello@nagyingatlan.hu, Nagy Péter, peter@nagyingatlan.hu, +36 30 222 3333, Estate Agent',
+  'Smith & Co Solicitors, 12 High Street London, SW1A 1AA, +44 20 1234 5678, https://smithco.co.uk, info@smithco.co.uk, Jane Smith, jane@smithco.co.uk, +44 7700 111222, Solicitor',
+  'Bristol Estate Agents, 45 Park Row Bristol, BS1 5LH, +44 117 345 6789, https://bristolea.co.uk, hello@bristolea.co.uk, Tom Brown, tom@bristolea.co.uk, +44 7700 222333, Estate Agent',
 ].join('\n');
 
 // Parse a single line respecting quoted fields, given a separator character.
@@ -60,8 +60,8 @@ function parseAll(text: string): { rows: ParsedRow[]; separator: '\t' | ',' } {
   const rows: ParsedRow[] = nonEmpty.map((line) => {
     const values = parseLine(line, separator);
     let error: string | null = null;
-    if (!values[0]) error = 'Hiányzó cégnév';
-    else if (values.length > COLUMNS.length) error = `Túl sok oszlop (${values.length}, max ${COLUMNS.length})`;
+    if (!values[0]) error = 'Missing company name';
+    else if (values.length > COLUMNS.length) error = `Too many columns (${values.length}, max ${COLUMNS.length})`;
     return { values, error };
   });
   return { rows, separator };
@@ -108,14 +108,14 @@ export default function BulkAddPage() {
         body: rowsToCsv(parsed.rows),
       });
       if (!res.ok) {
-        const err: any = await res.json().catch(() => ({ error: 'Feltöltés sikertelen' }));
-        setSubmitError(err.error || 'Feltöltés sikertelen');
+        const err: any = await res.json().catch(() => ({ error: 'Upload failed' }));
+        setSubmitError(err.error || 'Upload failed');
         return;
       }
       const data = await res.json();
       setResult(data);
     } catch {
-      setSubmitError('Feltöltés sikertelen');
+      setSubmitError('Upload failed');
     } finally {
       setSubmitting(false);
     }
@@ -131,14 +131,14 @@ export default function BulkAddPage() {
         style={{ backgroundColor: THEME.surface, borderBottom: `1px solid ${THEME.border}` }}
       >
         <a href="/" className="flex items-center gap-2 text-sm cursor-pointer" style={{ color: THEME.textSecondary }}>
-          <ArrowLeft size={16} /> Vissza
+          <ArrowLeft size={16} /> Back
         </a>
         <div className="flex-1">
           <h1 className="text-lg font-semibold" style={{ color: THEME.textPrimary }}>
-            Tömeges feltöltés
+            Bulk Add Prospects
           </h1>
           <p className="text-xs" style={{ color: THEME.textMuted }}>
-            {SITE_CONFIG.name} — több cég egyszerre
+            {SITE_CONFIG.name} — upload many companies at once
           </p>
         </div>
       </header>
@@ -150,18 +150,18 @@ export default function BulkAddPage() {
           style={{ backgroundColor: THEME.surface, border: `1px solid ${THEME.border}` }}
         >
           <h2 className="text-sm font-semibold mb-2" style={{ color: THEME.textPrimary }}>
-            Hogyan működik?
+            How it works
           </h2>
           <ol className="list-decimal pl-5 space-y-1 text-sm" style={{ color: THEME.textSecondary }}>
-            <li>Nyiss egy Excel / Google Sheets / Numbers dokumentumot.</li>
-            <li>Töltsd ki egy sort egy cégre, pontosan a lenti oszlopsorrend szerint.</li>
-            <li>Jelöld ki a cellákat, <strong>Ctrl+C</strong> (vagy <strong>Cmd+C</strong>), és illeszd be (<strong>Ctrl+V</strong>) az alsó mezőbe.</li>
-            <li>Vesszővel elválasztva is beírhatod kézzel, ha úgy kényelmesebb.</li>
+            <li>Open a spreadsheet (Excel / Google Sheets / Numbers).</li>
+            <li>Fill one row per company, using the column order shown below.</li>
+            <li>Select the cells, <strong>Ctrl+C</strong> (or <strong>Cmd+C</strong>), then paste (<strong>Ctrl+V</strong>) into the box below.</li>
+            <li>Or type rows directly with commas between fields.</li>
           </ol>
 
           <div className="mt-4">
             <p className="text-xs uppercase tracking-wider mb-2" style={{ color: THEME.textMuted }}>
-              Oszlopok sorrendje (balról jobbra)
+              Column order (left to right)
             </p>
             <div className="flex flex-wrap gap-1.5">
               {COLUMNS.map((col, idx) => (
@@ -179,7 +179,7 @@ export default function BulkAddPage() {
               ))}
             </div>
             <p className="text-xs mt-2" style={{ color: THEME.textMuted }}>
-              Csak a <strong>Név</strong> kötelező. A többi üresen is hagyható. Azonos név + irányítószám duplikáció kihagyásra kerül.
+              Only <strong>Name</strong> is required. The rest can be left blank. Duplicates (same name + postcode) will be skipped.
             </p>
           </div>
         </div>
@@ -188,7 +188,7 @@ export default function BulkAddPage() {
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <label className="text-sm font-semibold" style={{ color: THEME.textPrimary }}>
-              Adatok beillesztése
+              Paste data
             </label>
             <div className="flex gap-2">
               <button
@@ -196,21 +196,21 @@ export default function BulkAddPage() {
                 className="text-xs px-2 py-1 rounded-[6px] cursor-pointer"
                 style={{ backgroundColor: THEME.elevated, border: `1px solid ${THEME.border}`, color: THEME.textSecondary }}
               >
-                Példa betöltése
+                Load example
               </button>
               <button
                 onClick={handleClear}
                 className="text-xs px-2 py-1 rounded-[6px] cursor-pointer"
                 style={{ backgroundColor: THEME.elevated, border: `1px solid ${THEME.border}`, color: THEME.textSecondary }}
               >
-                Törlés
+                Clear
               </button>
             </div>
           </div>
           <textarea
             value={text}
             onChange={(e) => { setText(e.target.value); setResult(null); setSubmitError(null); }}
-            placeholder="Illeszd be ide a sorokat… (egy sor = egy cég)"
+            placeholder="Paste rows here… (one row = one company)"
             rows={10}
             className="w-full px-3 py-2 rounded-[10px] text-sm font-mono outline-none"
             style={{
@@ -221,9 +221,9 @@ export default function BulkAddPage() {
           />
           {text.trim() && (
             <p className="text-xs" style={{ color: THEME.textMuted }}>
-              Észlelt elválasztó: {parsed.separator === '\t' ? 'Tab (táblázatból másolva)' : 'Vessző'} ·
-              {' '}Érvényes sorok: {validRowCount}
-              {errorCount > 0 && <> · <span style={{ color: '#ef4444' }}>Hibás: {errorCount}</span></>}
+              Detected separator: {parsed.separator === '\t' ? 'Tab (pasted from spreadsheet)' : 'Comma'} ·
+              {' '}Valid rows: {validRowCount}
+              {errorCount > 0 && <> · <span style={{ color: '#ef4444' }}>Errors: {errorCount}</span></>}
             </p>
           )}
         </div>
@@ -236,7 +236,7 @@ export default function BulkAddPage() {
           >
             <div className="px-4 py-3" style={{ borderBottom: `1px solid ${THEME.border}` }}>
               <h2 className="text-sm font-semibold" style={{ color: THEME.textPrimary }}>
-                Előnézet ({parsed.rows.length} sor)
+                Preview ({parsed.rows.length} row{parsed.rows.length !== 1 ? 's' : ''})
               </h2>
             </div>
             <div className="overflow-x-auto">
@@ -253,7 +253,7 @@ export default function BulkAddPage() {
                         {col.label}
                       </th>
                     ))}
-                    <th className="px-3 py-2 text-left font-medium" style={{ color: THEME.textMuted }}>Állapot</th>
+                    <th className="px-3 py-2 text-left font-medium" style={{ color: THEME.textMuted }}>Status</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -283,7 +283,7 @@ export default function BulkAddPage() {
                           </span>
                         ) : (
                           <span className="inline-flex items-center gap-1" style={{ color: '#10b981' }}>
-                            <Check size={12} /> Rendben
+                            <Check size={12} /> Ready
                           </span>
                         )}
                       </td>
@@ -301,12 +301,12 @@ export default function BulkAddPage() {
             className="rounded-[12px] p-4"
             style={{ backgroundColor: '#ecfdf5', border: '1px solid #a7f3d0', color: '#065f46' }}
           >
-            <p className="text-sm font-semibold">Feltöltés kész.</p>
+            <p className="text-sm font-semibold">Upload complete.</p>
             <p className="text-sm mt-1">
-              <strong>{result.imported}</strong> cég létrehozva ·
-              {' '}<strong>{result.skipped}</strong> duplikáció kihagyva
-              {result.errored > 0 && <> · <strong>{result.errored}</strong> hibás sor</>}
-              {' '}(<strong>{result.total}</strong> összesen).
+              <strong>{result.imported}</strong> created ·
+              {' '}<strong>{result.skipped}</strong> duplicates skipped
+              {result.errored > 0 && <> · <strong>{result.errored}</strong> errored</>}
+              {' '}(<strong>{result.total}</strong> total).
             </p>
             <div className="mt-3 flex gap-2">
               <a
@@ -314,14 +314,14 @@ export default function BulkAddPage() {
                 className="text-xs px-3 py-1.5 rounded-[6px] cursor-pointer"
                 style={{ backgroundColor: THEME.accent, color: THEME.accentForeground }}
               >
-                Vissza az alkalmazáshoz
+                Back to app
               </a>
               <button
                 onClick={handleClear}
                 className="text-xs px-3 py-1.5 rounded-[6px] cursor-pointer"
                 style={{ backgroundColor: THEME.elevated, border: `1px solid ${THEME.border}`, color: THEME.textSecondary }}
               >
-                Még egy kör
+                Upload more
               </button>
             </div>
           </div>
@@ -341,8 +341,8 @@ export default function BulkAddPage() {
           <div className="flex items-center justify-between">
             <p className="text-sm" style={{ color: THEME.textSecondary }}>
               {validRowCount > 0
-                ? `${validRowCount} cég kerül feltöltésre.`
-                : 'Illessz be legalább egy sort a feltöltéshez.'}
+                ? `${validRowCount} compan${validRowCount === 1 ? 'y' : 'ies'} will be uploaded.`
+                : 'Paste at least one row to upload.'}
             </p>
             <button
               onClick={handleSubmit}
@@ -350,7 +350,7 @@ export default function BulkAddPage() {
               className="px-6 py-2.5 rounded-[10px] text-sm font-semibold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ backgroundColor: THEME.accent, color: THEME.accentForeground }}
             >
-              {submitting ? 'Feltöltés…' : `Feltöltés (${validRowCount})`}
+              {submitting ? 'Uploading…' : `Upload (${validRowCount})`}
             </button>
           </div>
         )}
