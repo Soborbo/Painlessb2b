@@ -1,4 +1,4 @@
-import { MapPin, List, Columns3, Flame, Bell, Plus, LogOut, BarChart3, Copy, FileText, History, ClipboardPaste } from 'lucide-react';
+import { MapPin, List, Columns3, Flame, Bell, Plus, LogOut, BarChart3, Copy, FileText, History } from 'lucide-react';
 import { STATUS_CONFIG } from '../../lib/constants';
 import { THEME, SITE_CONFIG } from '../../lib/site-config';
 import type { AppState, Action, Company, View } from './types';
@@ -161,16 +161,6 @@ export default function TopBar({ state, dispatch, filteredCompanies, onRefresh, 
           }}
           onError={(msg) => dispatch({ type: 'SET_TOAST', payload: { message: msg, type: 'error' } })}
         />
-
-        {/* Bulk add (paste multiple at once) */}
-        <a
-          href="/bulk-add"
-          className="p-2 rounded-[6px] transition-all duration-200 cursor-pointer"
-          style={{ color: THEME.textSecondary }}
-          title="Tömeges feltöltés (több cég egyszerre)"
-        >
-          <ClipboardPaste size={18} />
-        </a>
 
         {/* Add prospect */}
         <button

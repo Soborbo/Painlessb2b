@@ -17,9 +17,11 @@ interface PreviewData {
 export default function ImportExport({ onImportComplete, onError }: Props) {
   const fileRef = useRef<HTMLInputElement>(null);
   const exportRef = useRef<HTMLDivElement>(null);
+  const importRef = useRef<HTMLDivElement>(null);
   const [preview, setPreview] = useState<PreviewData | null>(null);
   const [importing, setImporting] = useState(false);
   const [showExportMenu, setShowExportMenu] = useState(false);
+  const [showImportMenu, setShowImportMenu] = useState(false);
 
   // Close export menu on outside click
   useEffect(() => {
@@ -32,6 +34,18 @@ export default function ImportExport({ onImportComplete, onError }: Props) {
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, [showExportMenu]);
+
+  // Close import menu on outside click
+  useEffect(() => {
+    if (!showImportMenu) return;
+    const handler = (e: MouseEvent) => {
+      if (importRef.current && !importRef.current.contains(e.target as Node)) {
+        setShowImportMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [showImportMenu]);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -137,14 +151,38 @@ export default function ImportExport({ onImportComplete, onError }: Props) {
           onChange={handleFileSelect}
           className="hidden"
         />
-        <button
-          onClick={() => fileRef.current?.click()}
-          className="p-2 rounded-[6px] transition-all duration-200 cursor-pointer"
-          style={{ color: THEME.textSecondary }}
-          title="Import JSON/CSV"
-        >
-          <Upload size={18} />
-        </button>
+        <div className="relative" ref={importRef}>
+          <button
+            onClick={() => setShowImportMenu(!showImportMenu)}
+            className="p-2 rounded-[6px] transition-all duration-200 cursor-pointer"
+            style={{ color: THEME.textSecondary }}
+            title="Import"
+          >
+            <Upload size={18} />
+          </button>
+          {showImportMenu && (
+            <div
+              className="absolute right-0 top-full mt-1 rounded-[6px] py-1 min-w-[180px] shadow-lg z-20"
+              style={{ backgroundColor: THEME.surface, border: `1px solid ${THEME.border}` }}
+            >
+              <button
+                onClick={() => { setShowImportMenu(false); fileRef.current?.click(); }}
+                className="w-full text-left px-3 py-1.5 text-sm cursor-pointer"
+                style={{ color: THEME.textPrimary }}
+              >
+                Upload file (JSON / CSV)
+              </button>
+              <a
+                href="/bulk-add"
+                className="block w-full text-left px-3 py-1.5 text-sm cursor-pointer"
+                style={{ color: THEME.textPrimary }}
+                onClick={() => setShowImportMenu(false)}
+              >
+                Paste rows (bulk add)
+              </a>
+            </div>
+          )}
+        </div>
         <div className="relative" ref={exportRef}>
           <button
             onClick={() => setShowExportMenu(!showExportMenu)}
