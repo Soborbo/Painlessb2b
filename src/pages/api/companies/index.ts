@@ -44,17 +44,25 @@ export const GET: APIRoute = async ({ request }) => {
     conditions.push(`(
       c.name LIKE ? OR c.address LIKE ? OR c.postcode LIKE ? OR c.contact_name LIKE ?
       OR c.id IN (SELECT n.company_id FROM notes n WHERE n.body LIKE ?)
+      OR c.id IN (SELECT ct.company_id FROM contacts ct WHERE ct.name LIKE ? OR ct.email LIKE ?)
     )`);
     const s = `%${search}%`;
-    params.push(s, s, s, s, s);
+    params.push(s, s, s, s, s, s, s);
   }
 
   if (hasEmail === 'true') {
-    conditions.push(`((c.contact_email IS NOT NULL AND c.contact_email != '') OR (c.generic_email IS NOT NULL AND c.generic_email != ''))`);
+    conditions.push(`(
+      (c.contact_email IS NOT NULL AND c.contact_email != '')
+      OR (c.generic_email IS NOT NULL AND c.generic_email != '')
+      OR c.id IN (SELECT ct.company_id FROM contacts ct WHERE ct.email IS NOT NULL AND ct.email != '')
+    )`);
   }
 
   if (hasContact === 'true') {
-    conditions.push(`(c.contact_name IS NOT NULL AND c.contact_name != '')`);
+    conditions.push(`(
+      (c.contact_name IS NOT NULL AND c.contact_name != '')
+      OR c.id IN (SELECT ct.company_id FROM contacts ct WHERE ct.name IS NOT NULL AND ct.name != '')
+    )`);
   }
 
   if (overdue === 'true') {
@@ -119,6 +127,23 @@ export const POST: APIRoute = async ({ request }) => {
     now,
     now
   ).run();
+
+  // Seed a primary contact row if any contact data was provided, so the new
+  // contacts table stays the source of truth for people-level details.
+  if (body.contact_name || body.contact_email || body.contact_phone) {
+    await db.prepare(
+      `INSERT INTO contacts (id, company_id, name, email, phone, is_primary, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, 1, ?, ?)`
+    ).bind(
+      generateId(),
+      id,
+      body.contact_name || null,
+      body.contact_email || null,
+      body.contact_phone || null,
+      now,
+      now
+    ).run();
+  }
 
   const company = await db.prepare(`
     SELECT c.*, cat.name as category_name, cat.color as category_color

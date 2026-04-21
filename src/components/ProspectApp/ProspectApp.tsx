@@ -288,6 +288,17 @@ export default function ProspectApp() {
     }
   }, []);
 
+  const handleRefreshCompany = useCallback(async (id: string) => {
+    try {
+      const res = await fetch(`/api/companies/${id}`);
+      if (!res.ok) return;
+      const fresh: Company = await res.json();
+      dispatch({ type: 'UPDATE_COMPANY', payload: fresh });
+    } catch {
+      // non-critical
+    }
+  }, []);
+
   const handleCreateCompany = useCallback(async (fields: Partial<Company>) => {
     try {
       const res = await fetch('/api/companies', {
@@ -531,6 +542,7 @@ export default function ProspectApp() {
         onUpdate={handleUpdateCompany}
         onCreate={handleCreateCompany}
         onDelete={handleDeleteCompany}
+        onRefresh={handleRefreshCompany}
         onOpenEmail={() => dispatch({ type: 'SET_EMAIL_MODAL', payload: true })}
         onToast={(msg, type) => dispatch({ type: 'SET_TOAST', payload: { message: msg, type } })}
       />

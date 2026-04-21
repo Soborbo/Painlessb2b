@@ -1,6 +1,29 @@
 import type { APIRoute } from 'astro';
 import { getCfEnv } from '../../../lib/cf-env';
 
+export const GET: APIRoute = async ({ params }) => {
+  const { DB: db } = await getCfEnv();
+  const { id } = params;
+
+  const company = await db.prepare(`
+    SELECT c.*, cat.name as category_name, cat.color as category_color
+    FROM companies c
+    LEFT JOIN categories cat ON c.category_id = cat.id
+    WHERE c.id = ?
+  `).bind(id).first();
+
+  if (!company) {
+    return new Response(JSON.stringify({ error: 'Company not found' }), {
+      status: 404,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  return new Response(JSON.stringify(company), {
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
 export const PUT: APIRoute = async ({ params, request }) => {
   const { DB: db } = await getCfEnv();
   const { id } = params;
@@ -73,6 +96,7 @@ export const DELETE: APIRoute = async ({ params }) => {
   // Manually delete related records since D1 PRAGMA foreign_keys may not persist across statements
   await db.prepare('DELETE FROM notes WHERE company_id = ?').bind(id).run();
   await db.prepare('DELETE FROM email_log WHERE company_id = ?').bind(id).run();
+  await db.prepare('DELETE FROM contacts WHERE company_id = ?').bind(id).run();
   await db.prepare('DELETE FROM companies WHERE id = ?').bind(id).run();
 
   return new Response(JSON.stringify({ ok: true }), {

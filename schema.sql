@@ -40,6 +40,22 @@ CREATE TABLE IF NOT EXISTS notes (
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
+-- Additional contacts per company (people). The primary contact is mirrored
+-- onto companies.contact_name/contact_email/contact_phone so legacy filters,
+-- CSV export, and email send keep working unchanged.
+CREATE TABLE IF NOT EXISTS contacts (
+  id TEXT PRIMARY KEY,
+  company_id TEXT NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+  name TEXT,
+  email TEXT,
+  phone TEXT,
+  role TEXT,
+  is_primary INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_contacts_company_id ON contacts(company_id);
+
 CREATE TABLE IF NOT EXISTS email_log (
   id TEXT PRIMARY KEY,
   company_id TEXT NOT NULL REFERENCES companies(id) ON DELETE CASCADE,

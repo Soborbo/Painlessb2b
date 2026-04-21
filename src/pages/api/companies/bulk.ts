@@ -85,6 +85,7 @@ export const POST: APIRoute = async ({ request }) => {
       const deleteStmts = validIds.flatMap((id: string) => [
         db.prepare('DELETE FROM notes WHERE company_id = ?').bind(id),
         db.prepare('DELETE FROM email_log WHERE company_id = ?').bind(id),
+        db.prepare('DELETE FROM contacts WHERE company_id = ?').bind(id),
         db.prepare('DELETE FROM activity_log WHERE company_id = ?').bind(id),
         db.prepare('DELETE FROM companies WHERE id = ?').bind(id),
       ]);

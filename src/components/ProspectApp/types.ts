@@ -32,6 +32,18 @@ export interface Company {
   updated_at: string;
 }
 
+export interface Contact {
+  id: string;
+  company_id: string;
+  name: string | null;
+  email: string | null;
+  phone: string | null;
+  role: string | null;
+  is_primary: 0 | 1;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Note {
   id: string;
   company_id: string;
