@@ -1,9 +1,29 @@
 name = "prospect-tracker"
 compatibility_date = "2025-04-01"
 compatibility_flags = ["nodejs_compat"]
-pages_build_output_dir = "./dist/client"
 
+# The Astro Cloudflare adapter emits a fully-populated
+# dist/server/wrangler.json at build time (adding `main`, `assets`, rules,
+# etc.) by merging this file with its own defaults. Deploy with:
+#   npm run deploy        # = astro build && wrangler deploy -c ./dist/server/wrangler.json
+#
+# This root file is intentionally bindings-only so it doubles as the local
+# `astro dev` config via the adapter's platformProxy.
+
+# D1 — existing production database. Unchanged from the Pages deploy.
 [[d1_databases]]
 binding = "DB"
 database_name = "b2bpainless"
 database_id = "12a5d670-5bdc-4b7c-b5ce-98fe234d7dd2"
+
+# KV namespace used by Astro's session store (auto-enabled by the adapter
+# for SSR). App code doesn't use Astro.session — custom signed-cookie auth
+# lives in src/middleware.ts — but a bound KV namespace is still required
+# or deploy fails.
+#
+# Create this once per Cloudflare account:
+#   npx wrangler kv namespace create SESSION
+# Then paste the printed `id` below.
+[[kv_namespaces]]
+binding = "SESSION"
+id = "REPLACE_WITH_KV_NAMESPACE_ID"
