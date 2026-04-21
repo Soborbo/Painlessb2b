@@ -1,0 +1,8 @@
+---
+import Layout from '../layouts/Layout.astro';
+import BulkAddPage from '../components/BulkAddPage';
+import { SITE_CONFIG } from '../lib/site-config';
+---
+<Layout title={`Tömeges feltöltés — ${SITE_CONFIG.name}`}>
+  <BulkAddPage client:only="react" />
+</Layout>
