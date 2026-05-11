@@ -1,0 +1,52 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getCfEnv } from '../../lib/cf-env';
+import { listQuotes } from '../../quotes/db';
+
+const cfEnv = await getCfEnv();
+const quotes = await listQuotes(cfEnv.DB, { limit: 50 });
+---
+<Layout title="Quotes — Painless Removals">
+  <meta slot="head" name="robots" content="noindex,nofollow" />
+  <main class="mx-auto max-w-5xl px-6 py-10">
+    <header class="mb-8 flex items-center justify-between">
+      <h1 class="text-2xl font-semibold">Quotes</h1>
+      <a
+        href="/quotes/new"
+        class="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500"
+      >
+        New quote
+      </a>
+    </header>
+
+    {quotes.length === 0 ? (
+      <div class="rounded-lg border border-dashed border-gray-300 p-12 text-center">
+        <p class="text-gray-500">No quotes yet.</p>
+        <p class="mt-2 text-sm text-gray-400">
+          The quote/proposal tool is being built — this is the M1 stub.
+        </p>
+      </div>
+    ) : (
+      <ul class="divide-y divide-gray-200 rounded-lg border border-gray-200">
+        {quotes.map((q) => (
+          <li class="flex items-center justify-between px-4 py-3">
+            <div>
+              <div class="font-medium">
+                {q.recipient_email ?? '(no recipient yet)'}
+              </div>
+              <div class="text-xs text-gray-500">
+                {q.template_id} · {q.status}
+              </div>
+            </div>
+            <a
+              href={`/quotes/${q.id}/edit`}
+              class="text-sm text-indigo-600 hover:underline"
+            >
+              Open
+            </a>
+          </li>
+        ))}
+      </ul>
+    )}
+  </main>
+</Layout>
