@@ -141,6 +141,14 @@ export default function QuoteEditor({ quote: initialQuote, template }: Props) {
           >
             Reset all
           </button>
+          <a
+            href={`/api/quotes/${initialQuote.id}/preview-pdf?download=1`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded-md border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-100"
+          >
+            Download PDF
+          </a>
           <button
             disabled
             title="Send modal coming in M5"
