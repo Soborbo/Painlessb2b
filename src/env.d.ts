@@ -17,6 +17,9 @@ interface Env {
   QUOTE_PDFS?: R2Bucket;
   BROWSER?: Fetcher;
   RESEND_WEBHOOK_SECRET?: string;
+  // Optional override for the "CC me" send-modal toggle. Defaults to the
+  // selected sender alias address when unset.
+  QUOTE_CC_EMAIL?: string;
 }
 
 type Runtime = import('@astrojs/cloudflare').Runtime<Env>;

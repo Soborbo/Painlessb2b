@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Quote, TemplateMeta, TemplateFieldDef } from '../../quotes/types';
+import SendModal from './SendModal';
 
 interface Props {
   quote: Quote;
@@ -11,9 +12,11 @@ type SaveState = 'idle' | 'saving' | 'saved' | 'error';
 const AUTOSAVE_DEBOUNCE_MS = 800;
 
 export default function QuoteEditor({ quote: initialQuote, template }: Props) {
+  const [quote, setQuote] = useState<Quote>(initialQuote);
   const [fieldData, setFieldData] = useState<Record<string, string>>(
     initialQuote.field_data
   );
+  const [sendOpen, setSendOpen] = useState(false);
   const [saveState, setSaveState] = useState<SaveState>('idle');
   const [savedAt, setSavedAt] = useState<number | null>(
     initialQuote.updated_at
@@ -129,7 +132,7 @@ export default function QuoteEditor({ quote: initialQuote, template }: Props) {
           <div>
             <div className="text-sm font-medium">{template.name}</div>
             <div className="text-xs text-gray-500">
-              Quote #{initialQuote.id.slice(0, 8)} · {initialQuote.status}
+              Quote #{initialQuote.id.slice(0, 8)} · {quote.status}
             </div>
           </div>
         </div>
@@ -150,9 +153,14 @@ export default function QuoteEditor({ quote: initialQuote, template }: Props) {
             Download PDF
           </a>
           <button
-            disabled
-            title="Send modal coming in M5"
-            className="cursor-not-allowed rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white opacity-50"
+            onClick={() => setSendOpen(true)}
+            disabled={quote.status !== 'draft'}
+            title={
+              quote.status === 'draft'
+                ? 'Open send modal'
+                : `Already ${quote.status} — cannot resend from this draft`
+            }
+            className="rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-50"
           >
             Send
           </button>
@@ -203,6 +211,18 @@ export default function QuoteEditor({ quote: initialQuote, template }: Props) {
           />
         </main>
       </div>
+
+      {sendOpen && (
+        <SendModal
+          quote={quote}
+          template={template}
+          onClose={() => setSendOpen(false)}
+          onSent={(updated) => {
+            setQuote(updated);
+            setSendOpen(false);
+          }}
+        />
+      )}
     </div>
   );
 }
