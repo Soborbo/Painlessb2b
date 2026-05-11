@@ -1,0 +1,813 @@
+{
+  "id": "logistics-proposal",
+  "name": "Logistics Proposal",
+  "default_subject": "Logistics proposal from Painless Removals",
+  "default_body": "Hi {{recipient_first_name}},\n\nPlease find attached our logistics proposal. Let me know if you'd like to talk anything through.\n\nThanks,\n{{sender_name}}",
+  "fields": [
+    {
+      "id": "brand_strapline_pre",
+      "label": "Header strapline",
+      "group": "Brand & header",
+      "type": "text",
+      "default": "BRISTOL'S TRUSTED LOGISTICS & RELOCATION SPECIALISTS"
+    },
+    {
+      "id": "brand_strapline_year",
+      "label": "Year tag",
+      "group": "Brand & header",
+      "type": "text",
+      "default": "SINCE 1978"
+    },
+    {
+      "id": "cover_eyebrow_label",
+      "label": "Eyebrow label",
+      "group": "Cover — hero",
+      "type": "text",
+      "default": "PREPARED FOR"
+    },
+    {
+      "id": "cover_client_name",
+      "label": "Client name (orange)",
+      "group": "Cover — hero",
+      "type": "text",
+      "default": "THE GYM PEOPLE"
+    },
+    {
+      "id": "cover_headline_pre",
+      "label": "Headline — first part",
+      "group": "Cover — hero",
+      "type": "text",
+      "default": "Your"
+    },
+    {
+      "id": "cover_headline_em",
+      "label": "Headline — italic part",
+      "group": "Cover — hero",
+      "type": "text",
+      "default": "logistics partner"
+    },
+    {
+      "id": "cover_lede",
+      "label": "Lede paragraph",
+      "group": "Cover — hero",
+      "type": "textarea",
+      "default": "A short proposal covering how we can support your move, fit-out, relocations and extra logistics requirements."
+    },
+    {
+      "id": "cover_partner_name",
+      "label": "Partner name",
+      "group": "Cover — details panel",
+      "type": "text",
+      "default": "The Gym People"
+    },
+    {
+      "id": "cover_partner_sub",
+      "label": "Partner subtitle",
+      "group": "Cover — details panel",
+      "type": "text",
+      "default": "Commercial & Home Gym Design & Installation"
+    },
+    {
+      "id": "cover_scope_title",
+      "label": "Scope title",
+      "group": "Cover — details panel",
+      "type": "text",
+      "default": "Logistics partner"
+    },
+    {
+      "id": "cover_scope_sub",
+      "label": "Scope description",
+      "group": "Cover — details panel",
+      "type": "textarea",
+      "default": "Collection, transport, and on-site placement."
+    },
+    {
+      "id": "cover_coverage_title",
+      "label": "Coverage title",
+      "group": "Cover — details panel",
+      "type": "text",
+      "default": "UK nationwide"
+    },
+    {
+      "id": "cover_coverage_sub",
+      "label": "Coverage description",
+      "group": "Cover — details panel",
+      "type": "textarea",
+      "default": "4 Luton vans · access to 7.5 tonne vehicles at competitive rates · a team of 10 employed staff and a pool of contractors."
+    },
+    {
+      "id": "cover_issued_title",
+      "label": "Issued date",
+      "group": "Cover — details panel",
+      "type": "text",
+      "default": "May 2026"
+    },
+    {
+      "id": "cover_issued_sub",
+      "label": "Issued subtitle",
+      "group": "Cover — details panel",
+      "type": "text",
+      "default": "Final pricing job-by-job."
+    },
+    {
+      "id": "cover_prep_name",
+      "label": "Prepared by — name",
+      "group": "Cover — details panel",
+      "type": "text",
+      "default": "Richard"
+    },
+    {
+      "id": "cover_prep_role",
+      "label": "Prepared by — role (HTML allowed)",
+      "group": "Cover — details panel",
+      "type": "textarea",
+      "default": "Business Development & Partnerships<br>Painless Removals · richard@painlessremovals.com"
+    },
+    {
+      "id": "toc_label",
+      "label": "TOC heading",
+      "group": "Cover — contents (TOC)",
+      "type": "text",
+      "default": "WHAT'S INSIDE"
+    },
+    {
+      "id": "toc_1_tag",
+      "label": "Item 1 tag",
+      "group": "Cover — contents (TOC)",
+      "type": "text",
+      "default": "SECTION I"
+    },
+    {
+      "id": "toc_1_name",
+      "label": "Item 1 name",
+      "group": "Cover — contents (TOC)",
+      "type": "text",
+      "default": "Why Painless"
+    },
+    {
+      "id": "toc_2_tag",
+      "label": "Item 2 tag",
+      "group": "Cover — contents (TOC)",
+      "type": "text",
+      "default": "SECTION II"
+    },
+    {
+      "id": "toc_2_name",
+      "label": "Item 2 name",
+      "group": "Cover — contents (TOC)",
+      "type": "text",
+      "default": "Indicative rates & setups"
+    },
+    {
+      "id": "toc_3_tag",
+      "label": "Item 3 tag",
+      "group": "Cover — contents (TOC)",
+      "type": "text",
+      "default": "SECTION III"
+    },
+    {
+      "id": "toc_3_name",
+      "label": "Item 3 name",
+      "group": "Cover — contents (TOC)",
+      "type": "text",
+      "default": "The team behind it"
+    },
+    {
+      "id": "footer_email",
+      "label": "Email",
+      "group": "Cover — footer",
+      "type": "text",
+      "default": "hello@painlessremovals.com"
+    },
+    {
+      "id": "footer_web",
+      "label": "Website (no https://)",
+      "group": "Cover — footer",
+      "type": "text",
+      "default": "painlessremovals.com"
+    },
+    {
+      "id": "footer_phone",
+      "label": "Phone (orange)",
+      "group": "Cover — footer",
+      "type": "text",
+      "default": "0117 287 0082"
+    },
+    {
+      "id": "s1_marker",
+      "label": "Section marker (left)",
+      "group": "Section I — Why Painless",
+      "type": "text",
+      "default": "SECTION I"
+    },
+    {
+      "id": "s1_marker_right_pre",
+      "label": "Marker right — first part",
+      "group": "Section I — Why Painless",
+      "type": "text",
+      "default": "SIX REASONS"
+    },
+    {
+      "id": "s1_marker_right_em",
+      "label": "Marker right — bold part",
+      "group": "Section I — Why Painless",
+      "type": "text",
+      "default": "WE FIT"
+    },
+    {
+      "id": "s1_title",
+      "label": "Section title",
+      "group": "Section I — Why Painless",
+      "type": "text",
+      "default": "Why Painless"
+    },
+    {
+      "id": "s1_intro",
+      "label": "Intro paragraph (HTML allowed)",
+      "group": "Section I — Why Painless",
+      "type": "textarea",
+      "default": "You mentioned there have been issues with <em>couriers missing slots</em>, resulting in delayed installations, and at times your team having to down tools to handle multiple deliveries. We've been operating since 1978 and are able to provide precise delivery times and delivery windows."
+    },
+    {
+      "id": "p1_title_pre",
+      "label": "Title — first part",
+      "group": "Section I — Reason 01",
+      "type": "text",
+      "default": "Vetted drivers"
+    },
+    {
+      "id": "p1_title_em",
+      "label": "Title — italic part",
+      "group": "Section I — Reason 01",
+      "type": "text",
+      "default": ""
+    },
+    {
+      "id": "p1_body",
+      "label": "Body (HTML allowed)",
+      "group": "Section I — Reason 01",
+      "type": "textarea",
+      "default": "We are proud of our hand-picked team who work with us day to day, who we know and we trust that they can maintain the reputation we hard earned during the decades."
+    },
+    {
+      "id": "p2_title_pre",
+      "label": "Title — first part",
+      "group": "Section I — Reason 02",
+      "type": "text",
+      "default": "Four Luton vans, "
+    },
+    {
+      "id": "p2_title_em",
+      "label": "Title — italic part",
+      "group": "Section I — Reason 02",
+      "type": "text",
+      "default": "500 cu ft each"
+    },
+    {
+      "id": "p2_body",
+      "label": "Body",
+      "group": "Section I — Reason 02",
+      "type": "textarea",
+      "default": "Each van runs a 3.5-tonne payload and a tail-lift. <strong>7.5-tonne available</strong> at competitive rates for larger movements."
+    },
+    {
+      "id": "p3_title_pre",
+      "label": "Title — first part",
+      "group": "Section I — Reason 03",
+      "type": "text",
+      "default": "Gym & events "
+    },
+    {
+      "id": "p3_title_em",
+      "label": "Title — italic part",
+      "group": "Section I — Reason 03",
+      "type": "text",
+      "default": "experience"
+    },
+    {
+      "id": "p3_body",
+      "label": "Body",
+      "group": "Section I — Reason 03",
+      "type": "textarea",
+      "default": "Our team also has experience with the disassembly and reassembly of gym equipment through home removals, alongside commercial gym deliveries and business expos."
+    },
+    {
+      "id": "p4_title_pre",
+      "label": "Title — first part",
+      "group": "Section I — Reason 04",
+      "type": "text",
+      "default": "Local but "
+    },
+    {
+      "id": "p4_title_em",
+      "label": "Title — italic part",
+      "group": "Section I — Reason 04",
+      "type": "text",
+      "default": "UK-wide service"
+    },
+    {
+      "id": "p4_body",
+      "label": "Body",
+      "group": "Section I — Reason 04",
+      "type": "textarea",
+      "default": "We are Bristol-based but regularly do removals from London to Edinburgh. We know the South West routes by heart but anywhere in mainland UK is a normal job for us."
+    },
+    {
+      "id": "p5_title_pre",
+      "label": "Title — first part",
+      "group": "Section I — Reason 05",
+      "type": "text",
+      "default": "£15,000 in-transit cover, "
+    },
+    {
+      "id": "p5_title_em",
+      "label": "Title — italic part",
+      "group": "Section I — Reason 05",
+      "type": "text",
+      "default": "per van"
+    },
+    {
+      "id": "p5_body",
+      "label": "Body",
+      "group": "Section I — Reason 05",
+      "type": "textarea",
+      "default": "Goods-in-Transit insurance on every vehicle, every job — covering vehicle fire, theft, and accidental damage. Move Assured accredited and AIM members; independently audited."
+    },
+    {
+      "id": "p6_title_pre",
+      "label": "Title — first part",
+      "group": "Section I — Reason 06",
+      "type": "text",
+      "default": "Specialist heavy moves, "
+    },
+    {
+      "id": "p6_title_em",
+      "label": "Title — italic part",
+      "group": "Section I — Reason 06",
+      "type": "text",
+      "default": "since 1978"
+    },
+    {
+      "id": "p6_body",
+      "label": "Body",
+      "group": "Section I — Reason 06",
+      "type": "textarea",
+      "default": "Forty-eight years of awkward access, multi-storey, fragile, and high-value relocations."
+    },
+    {
+      "id": "s2_marker",
+      "label": "Section marker (left)",
+      "group": "Section II — Header",
+      "type": "text",
+      "default": "SECTION II"
+    },
+    {
+      "id": "s2_marker_right_pre",
+      "label": "Marker right — first",
+      "group": "Section II — Header",
+      "type": "text",
+      "default": "ALL RATES"
+    },
+    {
+      "id": "s2_marker_right_em",
+      "label": "Marker right — bold",
+      "group": "Section II — Header",
+      "type": "text",
+      "default": "EXCLUSIVE OF VAT"
+    },
+    {
+      "id": "s2_title_pre",
+      "label": "Title — first part",
+      "group": "Section II — Header",
+      "type": "text",
+      "default": "Indicative "
+    },
+    {
+      "id": "s2_title_em",
+      "label": "Title — italic part",
+      "group": "Section II — Header",
+      "type": "text",
+      "default": "rates & setups"
+    },
+    {
+      "id": "s2_intro",
+      "label": "Intro paragraph",
+      "group": "Section II — Header",
+      "type": "textarea",
+      "default": "The pricing structure below is a rough outline of costs. All work would need to be reviewed on a job by job basis. With reasonable advance notice we can stay flexible and accommodate your requirements where possible."
+    },
+    {
+      "id": "mileage_label",
+      "label": "Banner label",
+      "group": "Section II — Mileage banner",
+      "type": "text",
+      "default": "MILEAGE — ADDED TO ALL JOBS"
+    },
+    {
+      "id": "mileage_price",
+      "label": "Price",
+      "group": "Section II — Mileage banner",
+      "type": "text",
+      "default": "£0.95"
+    },
+    {
+      "id": "mileage_unit",
+      "label": "Unit (e.g. \"per mile\")",
+      "group": "Section II — Mileage banner",
+      "type": "text",
+      "default": "per mile"
+    },
+    {
+      "id": "mileage_note",
+      "label": "Right-side note",
+      "group": "Section II — Mileage banner",
+      "type": "textarea",
+      "default": "Subject to review depending on fuel prices and market conditions."
+    },
+    {
+      "id": "tier1_tag",
+      "label": "Tier tag",
+      "group": "Section II — Tier 1 (Light)",
+      "type": "text",
+      "default": "SETUP 01 · LIGHT"
+    },
+    {
+      "id": "tier1_name",
+      "label": "Tier name",
+      "group": "Section II — Tier 1 (Light)",
+      "type": "text",
+      "default": "1 man + 1 van"
+    },
+    {
+      "id": "tier1_sub",
+      "label": "Tier subtitle",
+      "group": "Section II — Tier 1 (Light)",
+      "type": "text",
+      "default": "Single-driver runs, smaller deliveries"
+    },
+    {
+      "id": "tier1_4hr",
+      "label": "4-hour price",
+      "group": "Section II — Tier 1 (Light)",
+      "type": "text",
+      "default": "£185"
+    },
+    {
+      "id": "tier1_8hr",
+      "label": "8-hour price",
+      "group": "Section II — Tier 1 (Light)",
+      "type": "text",
+      "default": "£365"
+    },
+    {
+      "id": "tier1_fit",
+      "label": "Tier description",
+      "group": "Section II — Tier 1 (Light)",
+      "type": "textarea",
+      "default": "Best for individual residential drops, expo collections, or shorter runs where a single porter is enough."
+    },
+    {
+      "id": "tier2_tag",
+      "label": "Tier tag",
+      "group": "Section II — Tier 2 (Standard)",
+      "type": "text",
+      "default": "SETUP 02 · STANDARD"
+    },
+    {
+      "id": "tier2_name",
+      "label": "Tier name",
+      "group": "Section II — Tier 2 (Standard)",
+      "type": "text",
+      "default": "2 men + 1 van"
+    },
+    {
+      "id": "tier2_sub",
+      "label": "Tier subtitle",
+      "group": "Section II — Tier 2 (Standard)",
+      "type": "text",
+      "default": "Two-person crew with a single Luton"
+    },
+    {
+      "id": "tier2_4hr",
+      "label": "4-hour price",
+      "group": "Section II — Tier 2 (Standard)",
+      "type": "text",
+      "default": "£300"
+    },
+    {
+      "id": "tier2_8hr",
+      "label": "8-hour price",
+      "group": "Section II — Tier 2 (Standard)",
+      "type": "text",
+      "default": "£595"
+    },
+    {
+      "id": "tier2_fit",
+      "label": "Tier description",
+      "group": "Section II — Tier 2 (Standard)",
+      "type": "textarea",
+      "default": "A two-person crew handles loading, securing, and unloading on any single-Luton job — suitable for most home and small commercial deliveries."
+    },
+    {
+      "id": "tier3_tag",
+      "label": "Tier tag",
+      "group": "Section II — Tier 3 (Large)",
+      "type": "text",
+      "default": "SETUP 03 · LARGE"
+    },
+    {
+      "id": "tier3_name",
+      "label": "Tier name",
+      "group": "Section II — Tier 3 (Large)",
+      "type": "text",
+      "default": "3 men + 2 vans"
+    },
+    {
+      "id": "tier3_sub",
+      "label": "Tier subtitle",
+      "group": "Section II — Tier 3 (Large)",
+      "type": "text",
+      "default": "Multi-piece commercial fit-outs & expos"
+    },
+    {
+      "id": "tier3_4hr",
+      "label": "4-hour price",
+      "group": "Section II — Tier 3 (Large)",
+      "type": "text",
+      "default": "£470"
+    },
+    {
+      "id": "tier3_8hr",
+      "label": "8-hour price",
+      "group": "Section II — Tier 3 (Large)",
+      "type": "text",
+      "default": "£935"
+    },
+    {
+      "id": "tier3_fit",
+      "label": "Tier description",
+      "group": "Section II — Tier 3 (Large)",
+      "type": "textarea",
+      "default": "When extra hands and a second vehicle are needed to pack, load, and unload heavy multi-piece commercial gym kit or expo builds."
+    },
+    {
+      "id": "includes_head",
+      "label": "\"Every job includes\" heading",
+      "group": "Section II — Includes & notes",
+      "type": "text",
+      "default": "EVERY JOB INCLUDES"
+    },
+    {
+      "id": "includes_body",
+      "label": "\"Every job includes\" body",
+      "group": "Section II — Includes & notes",
+      "type": "textarea",
+      "default": "Confirmed time slot held to the hour · Tail-lift loading and unloading · Transit blankets and protective wrap · £15,000 Goods-in-Transit cover per van · Single point of contact at Painless throughout."
+    },
+    {
+      "id": "billing1_head_pre",
+      "label": "Billing note 1 — head first part",
+      "group": "Section II — Includes & notes",
+      "type": "text",
+      "default": "Minimum booking "
+    },
+    {
+      "id": "billing1_head_em",
+      "label": "Billing note 1 — head italic",
+      "group": "Section II — Includes & notes",
+      "type": "text",
+      "default": "4 hours"
+    },
+    {
+      "id": "billing1_body",
+      "label": "Billing note 1 body",
+      "group": "Section II — Includes & notes",
+      "type": "textarea",
+      "default": "Our jobs are usually based on a minimum four-hour booking. However, if timings are flexible and depending on the specific job requirements, we may be able to accommodate a smaller booking window."
+    },
+    {
+      "id": "billing2_head_pre",
+      "label": "Billing note 2 — head first part",
+      "group": "Section II — Includes & notes",
+      "type": "text",
+      "default": "Invoicing & "
+    },
+    {
+      "id": "billing2_head_em",
+      "label": "Billing note 2 — head italic",
+      "group": "Section II — Includes & notes",
+      "type": "text",
+      "default": "payment terms"
+    },
+    {
+      "id": "billing2_body",
+      "label": "Billing note 2 body",
+      "group": "Section II — Includes & notes",
+      "type": "textarea",
+      "default": "Jobs are normally invoiced on completion once actual hours have been confirmed. Job time is calculated from departure from depot through to return to depot. Payment terms are agreed job-by-job — typically 30 days for ongoing partners, or a deposit upfront on larger one-off bookings."
+    },
+    {
+      "id": "vat_note",
+      "label": "Footer VAT note",
+      "group": "Section II — Includes & notes",
+      "type": "textarea",
+      "default": "All rates shown are <strong>exclusive of VAT</strong>. Mileage charged in addition. Final pricing confirmed job-by-job once collection point, destination, and equipment list are known."
+    },
+    {
+      "id": "s3_marker",
+      "label": "Section marker (left)",
+      "group": "Section III — Header",
+      "type": "text",
+      "default": "SECTION III"
+    },
+    {
+      "id": "s3_marker_right_pre",
+      "label": "Marker right — first",
+      "group": "Section III — Header",
+      "type": "text",
+      "default": "TRUSTED"
+    },
+    {
+      "id": "s3_marker_right_em",
+      "label": "Marker right — bold",
+      "group": "Section III — Header",
+      "type": "text",
+      "default": "SINCE 1978"
+    },
+    {
+      "id": "s3_title_pre",
+      "label": "Title — first part",
+      "group": "Section III — Header",
+      "type": "text",
+      "default": "The people behind "
+    },
+    {
+      "id": "s3_title_em",
+      "label": "Title — italic part",
+      "group": "Section III — Header",
+      "type": "text",
+      "default": "your installs"
+    },
+    {
+      "id": "s3_intro",
+      "label": "Intro paragraph",
+      "group": "Section III — Header",
+      "type": "textarea",
+      "default": "Every job runs through three named people on our side. You'll always know who to ring if something needs to change."
+    },
+    {
+      "id": "team1_role",
+      "label": "Role label",
+      "group": "Section III — Team member 1 (Jay)",
+      "type": "text",
+      "default": "DIRECTOR"
+    },
+    {
+      "id": "team1_name",
+      "label": "Name",
+      "group": "Section III — Team member 1 (Jay)",
+      "type": "text",
+      "default": "Jay"
+    },
+    {
+      "id": "team1_bio",
+      "label": "Bio",
+      "group": "Section III — Team member 1 (Jay)",
+      "type": "textarea",
+      "default": "Managing Director of Painless. Personally overseen 2,000+ home and office relocations across the UK; specialises in long-distance and complex multi-storey access jobs from Bristol."
+    },
+    {
+      "id": "team2_role",
+      "label": "Role label",
+      "group": "Section III — Team member 2 (Richard)",
+      "type": "text",
+      "default": "BD & PARTNERSHIPS"
+    },
+    {
+      "id": "team2_name",
+      "label": "Name",
+      "group": "Section III — Team member 2 (Richard)",
+      "type": "text",
+      "default": "Richard"
+    },
+    {
+      "id": "team2_bio",
+      "label": "Bio",
+      "group": "Section III — Team member 2 (Richard)",
+      "type": "textarea",
+      "default": "Came from senior BD roles at national companies. Leads B2B partnerships at Painless — your single point of contact for the partnership, every step of the way."
+    },
+    {
+      "id": "team3_role",
+      "label": "Role label",
+      "group": "Section III — Team member 3 (Tom)",
+      "type": "text",
+      "default": "CUSTOMER RELATIONSHIPS"
+    },
+    {
+      "id": "team3_name",
+      "label": "Name",
+      "group": "Section III — Team member 3 (Tom)",
+      "type": "text",
+      "default": "Tom"
+    },
+    {
+      "id": "team3_bio",
+      "label": "Bio",
+      "group": "Section III — Team member 3 (Tom)",
+      "type": "textarea",
+      "default": "Linguist by training, fluent French and Spanish. Most likely the first voice you'll hear when you call — calm, organised front-of-house for every booking."
+    },
+    {
+      "id": "testimonial_text",
+      "label": "Testimonial quote (HTML allowed)",
+      "group": "Section III — Testimonial",
+      "type": "textarea",
+      "default": "We used Painless Removals for an <strong>office move</strong> and I cannot recommend them enough. From the initial contact to moving day everything went smoothly. The whole process was easy, they showed up on time and got stuck in straight away. This took a lot of stress away from the whole project."
+    },
+    {
+      "id": "testimonial_attr_name",
+      "label": "Reviewer name",
+      "group": "Section III — Testimonial",
+      "type": "text",
+      "default": "R Newman"
+    },
+    {
+      "id": "testimonial_attr_source",
+      "label": "Review source",
+      "group": "Section III — Testimonial",
+      "type": "text",
+      "default": "4.9 / 5 across 122 verified reviews"
+    },
+    {
+      "id": "cta_headline_pre",
+      "label": "Headline — first part",
+      "group": "Section III — Closing CTA",
+      "type": "text",
+      "default": "Ready when "
+    },
+    {
+      "id": "cta_headline_em",
+      "label": "Headline — italic part",
+      "group": "Section III — Closing CTA",
+      "type": "text",
+      "default": "you are"
+    },
+    {
+      "id": "cta_text",
+      "label": "Closing paragraph",
+      "group": "Section III — Closing CTA",
+      "type": "textarea",
+      "default": "Drop Richard a line whenever the team's read this through. We're set up to take a first booking within the week — South West to anywhere in the UK, on the slot you book. Jay is also happy to pick up directly for any commercial conversation."
+    },
+    {
+      "id": "cta_label_1",
+      "label": "Contact 1 — label",
+      "group": "Section III — Closing CTA",
+      "type": "text",
+      "default": "PARTNERSHIP ENQUIRIES"
+    },
+    {
+      "id": "cta_phone_1",
+      "label": "Contact 1 — phone",
+      "group": "Section III — Closing CTA",
+      "type": "text",
+      "default": "0117 287 0082"
+    },
+    {
+      "id": "cta_email_1",
+      "label": "Contact 1 — email",
+      "group": "Section III — Closing CTA",
+      "type": "text",
+      "default": "richard@painlessremovals.com"
+    },
+    {
+      "id": "cta_label_2",
+      "label": "Contact 2 — label",
+      "group": "Section III — Closing CTA",
+      "type": "text",
+      "default": "DIRECT TO JAY NEWTON · MD"
+    },
+    {
+      "id": "cta_phone_2",
+      "label": "Contact 2 — phone",
+      "group": "Section III — Closing CTA",
+      "type": "text",
+      "default": "07977 889 747"
+    },
+    {
+      "id": "cta_email_2",
+      "label": "Contact 2 — email",
+      "group": "Section III — Closing CTA",
+      "type": "text",
+      "default": "jay@painlessremovals.com"
+    },
+    {
+      "id": "page_bottom",
+      "label": "Bottom legal strip",
+      "group": "Section III — Closing CTA",
+      "type": "textarea",
+      "default": "Painless Removals Ltd · 290–294 Southmead Rd, Bristol BS10 5EN · All rates exclusive of VAT · Mileage £0.95/mi"
+    }
+  ]
+}
