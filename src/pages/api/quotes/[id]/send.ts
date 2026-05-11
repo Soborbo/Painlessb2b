@@ -89,7 +89,20 @@ export const POST: APIRoute = async ({ params, request }) => {
     entry.meta.default_body
   );
 
-  const html = renderQuoteHtml(refreshed.template_id, refreshed.field_data);
+  const rewriteOpts =
+    trackingEnabled && refreshed.tracking_token
+      ? {
+          rewriteLinks: {
+            token: refreshed.tracking_token,
+            baseUrl: new URL(request.url).origin,
+          },
+        }
+      : undefined;
+  const html = renderQuoteHtml(
+    refreshed.template_id,
+    refreshed.field_data,
+    rewriteOpts
+  );
   if (!html) return jsonError(500, 'render_failed');
 
   // 1. Render PDF

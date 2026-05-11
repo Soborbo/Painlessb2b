@@ -1,4 +1,17 @@
 import { getTemplate } from './templates';
+import { rewriteLinks } from './tracking';
+
+export interface RenderQuoteHtmlOptions {
+  /**
+   * If set, every <a href> in the rendered HTML is rewritten to route
+   * through /r/<token>?u=<base64(original)>. Used for the PDF we attach
+   * to outgoing emails; never for the editor preview.
+   */
+  rewriteLinks?: {
+    token: string;
+    baseUrl: string; // e.g. "https://painlessb2b.example.workers.dev"
+  };
+}
 
 // Mirrors the prototype's renderPreview: keys that match the `pN_title_em`
 // pattern get an `_em_block` companion that wraps the value in <em>…</em>,
@@ -33,7 +46,8 @@ export function renderTemplate(
 
 export function renderQuoteHtml(
   templateId: string,
-  fieldData: Record<string, string>
+  fieldData: Record<string, string>,
+  opts: RenderQuoteHtmlOptions = {}
 ): string | null {
   const entry = getTemplate(templateId);
   if (!entry) return null;
@@ -45,5 +59,10 @@ export function renderQuoteHtml(
     defaults[field.id] = field.default;
   }
   const merged = { ...defaults, ...fieldData };
-  return renderTemplate(entry.html, merged);
+  const rendered = renderTemplate(entry.html, merged);
+
+  if (opts.rewriteLinks) {
+    return rewriteLinks(rendered, opts.rewriteLinks.token, opts.rewriteLinks.baseUrl);
+  }
+  return rendered;
 }
