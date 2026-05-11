@@ -271,6 +271,31 @@ export async function deleteQuote(db: D1, id: string): Promise<void> {
   await db.prepare(`DELETE FROM quotes WHERE id = ?`).bind(id).run();
 }
 
+// Records an `edited` event but skips if one was recorded within the last
+// `withinSeconds` window. Autosave fires every 800ms; we don't want one
+// timeline row per keystroke. Default 60s gives a reasonable session-grain
+// signal without flooding quote_events.
+export async function recordEditedThrottled(
+  db: D1,
+  quoteId: string,
+  withinSeconds = 60
+): Promise<void> {
+  const last = await db
+    .prepare(
+      `SELECT occurred_at FROM quote_events
+        WHERE quote_id = ? AND event_type = 'edited'
+        ORDER BY occurred_at DESC
+        LIMIT 1`
+    )
+    .bind(quoteId)
+    .first<{ occurred_at: string }>();
+  if (last) {
+    const lastMs = new Date(last.occurred_at.replace(' ', 'T') + 'Z').getTime();
+    if (Date.now() - lastMs < withinSeconds * 1000) return;
+  }
+  await recordEvent(db, quoteId, 'edited');
+}
+
 export async function recordEvent(
   db: D1,
   quoteId: string,

@@ -1,0 +1,25 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import QuoteEditor from '../../../components/QuoteApp/QuoteEditor';
+import { getCfEnv } from '../../../lib/cf-env';
+import { getQuote } from '../../../quotes/db';
+import { getTemplateMeta } from '../../../quotes/templates';
+
+const id = Astro.params.id;
+if (!id) return Astro.redirect('/quotes');
+
+const cfEnv = await getCfEnv();
+const quote = await getQuote(cfEnv.DB, id);
+if (!quote) return new Response('Not found', { status: 404 });
+
+const template = getTemplateMeta(quote.template_id);
+if (!template) return new Response('Template missing', { status: 500 });
+---
+<Layout title={`${template.name} — Painless Removals`}>
+  <meta slot="head" name="robots" content="noindex,nofollow" />
+  <QuoteEditor quote={quote} template={template} client:only="react" />
+</Layout>
+
+<style is:global>
+  body { margin: 0; overflow: hidden; }
+</style>
