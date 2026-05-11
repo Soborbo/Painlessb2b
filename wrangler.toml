@@ -28,18 +28,16 @@ database_id = "12a5d670-5bdc-4b7c-b5ce-98fe234d7dd2"
 binding = "SESSION"
 id = "b9f7baffd9da44328f8a09789263a826"
 
-# ---------------------------------------------------------------------------
-# Quote / Proposal tool bindings — commented out until prerequisites land:
-#   1. Workers Paid plan ($5/mo) — required for Browser Rendering
-#   2. R2 bucket created:
-#        npx wrangler r2 bucket create painless-quote-pdfs
-#   3. Resend webhook secret set:
-#        npx wrangler secret put RESEND_WEBHOOK_SECRET
-# Uncomment together in the milestone that turns on PDF send (M4/M5).
-#
-# [[r2_buckets]]
-# binding = "QUOTE_PDFS"
-# bucket_name = "painless-quote-pdfs"
-#
-# [browser]
-# binding = "BROWSER"
+# R2 bucket for archiving sent quote PDFs.
+# Create once: `npx wrangler r2 bucket create painless-quote-pdfs`
+[[r2_buckets]]
+binding = "QUOTE_PDFS"
+bucket_name = "painless-quote-pdfs"
+
+# Browser Rendering API for server-side PDF generation.
+# Requires Workers Paid plan.
+[browser]
+binding = "BROWSER"
+
+# Resend webhook signature secret (set via `wrangler secret put`):
+#   npx wrangler secret put RESEND_WEBHOOK_SECRET
