@@ -1,0 +1,10 @@
+# Painless CRM — internal tool, not for public indexing.
+User-agent: *
+Disallow: /
+
+# Defense in depth: explicit deny on quote-tool routes, in case any
+# subset of the site is ever opened up.
+Disallow: /quotes/
+Disallow: /r/
+Disallow: /api/
+Disallow: /login

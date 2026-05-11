@@ -131,6 +131,16 @@ export default function TopBar({ state, dispatch, filteredCompanies, onRefresh, 
           <History size={18} />
         </button>
 
+        {/* Quotes */}
+        <a
+          href="/quotes"
+          className="p-2 rounded-[6px] transition-all duration-200 cursor-pointer"
+          style={{ color: THEME.textSecondary }}
+          title="Quotes"
+        >
+          <FileText size={18} />
+        </a>
+
         {/* Duplicate detector */}
         <button
           onClick={onOpenDuplicates}
