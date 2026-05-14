@@ -497,7 +497,9 @@
     @page { size:A4; margin:0; }
   }
 
-  @media (max-width:850px) {
+  /* Narrow-screen preview affordance only. Must stay `screen` — without it
+     this rule also matches print emulation (page.pdf), shrinking the PDF. */
+  @media screen and (max-width:850px) {
     .page { transform:scale(0.42); transform-origin:top center; margin:-86mm auto -130mm; }
     body { padding:5mm 0; }
   }

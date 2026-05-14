@@ -31,6 +31,10 @@ export default function QuoteEditor({ quote: initialQuote, template }: Props) {
   const fieldDataRef = useRef(fieldData);
   fieldDataRef.current = fieldData;
   const saveTimer = useRef<number | null>(null);
+  // Whether the pending autosave should also reload the preview iframe.
+  // Side-panel edits set this; inline (click-in-preview) edits don't —
+  // the iframe already shows those, reloading would just yank the cursor.
+  const pendingRefresh = useRef(false);
 
   const groups = useMemo(() => {
     const map = new Map<string, TemplateFieldDef[]>();
@@ -43,6 +47,8 @@ export default function QuoteEditor({ quote: initialQuote, template }: Props) {
   }, [template]);
 
   const persist = useCallback(async () => {
+    const shouldRefresh = pendingRefresh.current;
+    pendingRefresh.current = false;
     setSaveState('saving');
     try {
       const res = await fetch(`/api/quotes/${initialQuote.id}`, {
@@ -53,17 +59,21 @@ export default function QuoteEditor({ quote: initialQuote, template }: Props) {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       setSaveState('saved');
       setSavedAt(Date.now());
-      setPreviewVersion((v) => v + 1);
+      if (shouldRefresh) setPreviewVersion((v) => v + 1);
     } catch (e) {
       console.error('autosave failed', e);
       setSaveState('error');
     }
   }, [initialQuote.id]);
 
-  const scheduleSave = useCallback(() => {
-    if (saveTimer.current !== null) window.clearTimeout(saveTimer.current);
-    saveTimer.current = window.setTimeout(persist, AUTOSAVE_DEBOUNCE_MS);
-  }, [persist]);
+  const scheduleSave = useCallback(
+    (refreshPreview: boolean) => {
+      if (refreshPreview) pendingRefresh.current = true;
+      if (saveTimer.current !== null) window.clearTimeout(saveTimer.current);
+      saveTimer.current = window.setTimeout(persist, AUTOSAVE_DEBOUNCE_MS);
+    },
+    [persist]
+  );
 
   // Save in-flight values when the user navigates away.
   useEffect(() => {
@@ -80,10 +90,61 @@ export default function QuoteEditor({ quote: initialQuote, template }: Props) {
   const setField = useCallback(
     (id: string, value: string) => {
       setFieldData((prev) => ({ ...prev, [id]: value }));
-      scheduleSave();
+      scheduleSave(true);
     },
     [scheduleSave]
   );
+
+  // An edit typed straight into the preview iframe (contenteditable). Same
+  // persistence path as the side panel, but the iframe must NOT reload —
+  // it already reflects the change, a reload would drop the caret.
+  const applyInlineEdit = useCallback(
+    (id: string, value: string) => {
+      setFieldData((prev) => (prev[id] === value ? prev : { ...prev, [id]: value }));
+      scheduleSave(false);
+    },
+    [scheduleSave]
+  );
+
+  // A click on a panel-only field in the preview (one whose value carries
+  // HTML, so it can't be a plain-text contenteditable). Open its group in
+  // the side panel and focus the input.
+  const focusPanelField = useCallback(
+    (fieldId: string) => {
+      const field = template.fields.find((f) => f.id === fieldId);
+      if (!field) return;
+      setCollapsedGroups((prev) => {
+        if (!prev.has(field.group)) return prev;
+        const next = new Set(prev);
+        next.delete(field.group);
+        return next;
+      });
+      window.setTimeout(() => {
+        const el = document.getElementById(`f-${fieldId}`);
+        if (el) {
+          el.scrollIntoView({ block: 'center' });
+          (el as HTMLInputElement | HTMLTextAreaElement).focus();
+        }
+      }, 60);
+    },
+    [template]
+  );
+
+  // The preview iframe posts here whenever a field is edited or clicked.
+  useEffect(() => {
+    function onMessage(e: MessageEvent) {
+      if (e.origin !== window.location.origin) return;
+      const d = e.data;
+      if (!d || typeof d !== 'object') return;
+      if (d.type === 'qf-edit' && typeof d.fieldId === 'string') {
+        applyInlineEdit(d.fieldId, String(d.value ?? ''));
+      } else if (d.type === 'qf-focus' && typeof d.fieldId === 'string') {
+        focusPanelField(d.fieldId);
+      }
+    }
+    window.addEventListener('message', onMessage);
+    return () => window.removeEventListener('message', onMessage);
+  }, [applyInlineEdit, focusPanelField]);
 
   const resetField = useCallback(
     (field: TemplateFieldDef) => {
@@ -117,7 +178,7 @@ export default function QuoteEditor({ quote: initialQuote, template }: Props) {
     });
   }, []);
 
-  const previewSrc = `/api/quotes/${initialQuote.id}/preview?v=${previewVersion}`;
+  const previewSrc = `/api/quotes/${initialQuote.id}/preview?edit=1&v=${previewVersion}`;
 
   return (
     <div className="flex h-screen flex-col bg-gray-50">
@@ -207,7 +268,7 @@ export default function QuoteEditor({ quote: initialQuote, template }: Props) {
             src={previewSrc}
             title="Quote preview"
             className="h-full w-full border-0 bg-white"
-            sandbox="allow-same-origin"
+            sandbox="allow-same-origin allow-scripts"
           />
         </main>
       </div>

@@ -155,7 +155,7 @@ export const POST: APIRoute = async ({ params, request }) => {
       body: finalBody,
       cc: ccList,
       pdfBytes,
-      pdfFilename: `${entry.meta.name.replace(/\s+/g, '-').toLowerCase()}-${refreshed.id.slice(0, 8)}.pdf`,
+      pdfFilename: `painless-removals-quote-${refreshed.id.slice(0, 8)}.pdf`,
       trackingEnabled,
     });
     messageId = result.messageId;

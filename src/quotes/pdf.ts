@@ -33,6 +33,13 @@ export async function renderQuotePdf(
   const session = await puppeteer.launch(browser);
   try {
     const page = await session.newPage();
+    // Browser Rendering's default viewport is 800px wide. Templates carry an
+    // `@media (max-width:850px)` rule that scales `.page` down for narrow
+    // on-screen preview — at 800px that rule matches *inside* page.pdf() and
+    // produces a shrunken proposal floating in a mostly-blank A4 sheet. Force
+    // a viewport wider than any template's mobile breakpoint so only the base
+    // + `@media print` styles apply to the printed output.
+    await page.setViewport({ width: 1240, height: 1754 });
     // Template HTML is self-contained (embedded fonts/images as data URIs),
     // so 'load' is sufficient; networkidle0 would just add latency for the
     // sake of waiting on requests that will never fire.

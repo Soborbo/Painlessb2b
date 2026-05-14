@@ -55,9 +55,10 @@ export const GET: APIRoute = async ({ params, url }) => {
       quote.field_data,
       { trackingEnabled: quote.tracking_enabled }
     );
+    const filename = `painless-removals-quote-${quote.id.slice(0, 8)}.pdf`;
     const disposition = url.searchParams.get('download') === '1'
-      ? `attachment; filename="quote-${quote.id.slice(0, 8)}.pdf"`
-      : `inline; filename="quote-${quote.id.slice(0, 8)}.pdf"`;
+      ? `attachment; filename="${filename}"`
+      : `inline; filename="${filename}"`;
     return new Response(pdfBytes as BodyInit, {
       headers: {
         'Content-Type': 'application/pdf',
