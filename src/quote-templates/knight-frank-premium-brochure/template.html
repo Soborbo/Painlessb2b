@@ -1173,8 +1173,12 @@
       color: rgba(250, 247, 242, 0.88);
     }
 
-    /* ---------- RESPONSIVE ---------- */
-    @media (max-width: 1180px) {
+    /* ---------- RESPONSIVE ----------
+       Scoped to `screen`: during page.pdf() the print layout viewport is the
+       @page size (A4 portrait ≈ 794px), which would otherwise match these
+       max-width rules and collapse every grid to one column in the PDF. The
+       print layout is handled entirely by the @media print block below. */
+    @media screen and (max-width: 1180px) {
       .top-grid,
       .bottom-grid,
       .specialist-band,
@@ -1213,7 +1217,7 @@
       .footer-brand { border-right: 0; border-bottom: 1px solid rgba(212, 168, 75, 0.22); padding: 0 0 16px; }
     }
 
-    @media (max-width: 760px) {
+    @media screen and (max-width: 760px) {
       .brochure { margin: 0; border: 0; }
       .top-strip { grid-template-columns: 1fr; gap: 8px; padding: 12px 20px; text-align: center; }
       .top-strip .divider { display: none; }
