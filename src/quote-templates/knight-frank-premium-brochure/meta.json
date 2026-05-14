@@ -1,0 +1,932 @@
+{
+  "id": "knight-frank-premium-brochure",
+  "name": "Estate Agent Partnership Brochure",
+  "default_subject": "Partnership proposal from Painless Removals",
+  "default_body": "Hi {{recipient_first_name}},\n\nPlease find attached our partnership proposal — how we handle your clients' moves with the same care as the sale itself.\n\nThanks,\n{{sender_name}}",
+  "fields": [
+    {
+      "id": "partner_label",
+      "label": "Partnership label",
+      "group": "Brand & header",
+      "type": "text",
+      "default": "Prepared for"
+    },
+    {
+      "id": "partner_name",
+      "label": "Partner / agency name",
+      "group": "Brand & header",
+      "type": "text",
+      "default": "Knight Frank"
+    },
+    {
+      "id": "phone_label",
+      "label": "Phone label",
+      "group": "Brand & header",
+      "type": "text",
+      "default": "Direct line"
+    },
+    {
+      "id": "top_phone",
+      "label": "Header phone",
+      "group": "Brand & header",
+      "type": "text",
+      "default": "0117 287 0082"
+    },
+    {
+      "id": "hero_eyebrow",
+      "label": "Hero eyebrow",
+      "group": "Hero",
+      "type": "text",
+      "default": "A partnership in premium moves"
+    },
+    {
+      "id": "hero_line1",
+      "label": "Headline — line 1",
+      "group": "Hero",
+      "type": "text",
+      "default": "Your clients' move."
+    },
+    {
+      "id": "hero_line2_em",
+      "label": "Headline — line 2 italic word",
+      "group": "Hero",
+      "type": "text",
+      "default": "Handled"
+    },
+    {
+      "id": "hero_line2_post",
+      "label": "Headline — line 2 second word",
+      "group": "Hero",
+      "type": "text",
+      "default": "Painlessly"
+    },
+    {
+      "id": "hero_kicker",
+      "label": "Hero kicker",
+      "group": "Hero",
+      "type": "text",
+      "default": "Discreet · Careful · Independent since 1978"
+    },
+    {
+      "id": "hero_para_pre",
+      "label": "Hero paragraph — before partner name",
+      "group": "Hero",
+      "type": "text",
+      "default": "For "
+    },
+    {
+      "id": "hero_para_post",
+      "label": "Hero paragraph — after partner name",
+      "group": "Hero",
+      "type": "textarea",
+      "default": " Bristol clients who value their homes, their time, and a move that is handled with the same care as the sale itself - from first box to the last picture back on the wall."
+    },
+    {
+      "id": "stat1_number",
+      "label": "Stat 1 number",
+      "group": "Hero stats",
+      "type": "text",
+      "default": "1978"
+    },
+    {
+      "id": "stat1_label",
+      "label": "Stat 1 label",
+      "group": "Hero stats",
+      "type": "text",
+      "default": "Independent since"
+    },
+    {
+      "id": "stat2_number",
+      "label": "Stat 2 number",
+      "group": "Hero stats",
+      "type": "text",
+      "default": "2,000+"
+    },
+    {
+      "id": "stat2_label",
+      "label": "Stat 2 label",
+      "group": "Hero stats",
+      "type": "text",
+      "default": "Homes moved by Jay"
+    },
+    {
+      "id": "stat3_number",
+      "label": "Stat 3 number",
+      "group": "Hero stats",
+      "type": "text",
+      "default": "4.9★"
+    },
+    {
+      "id": "stat3_label",
+      "label": "Stat 3 label",
+      "group": "Hero stats",
+      "type": "text",
+      "default": "122 Google reviews"
+    },
+    {
+      "id": "trust1_title",
+      "label": "Trust 1 title",
+      "group": "Trust bar",
+      "type": "text",
+      "default": "Fully Insured"
+    },
+    {
+      "id": "trust1_text",
+      "label": "Trust 1 text",
+      "group": "Trust bar",
+      "type": "text",
+      "default": "£15k per van + specialist cover"
+    },
+    {
+      "id": "trust2_title",
+      "label": "Trust 2 title",
+      "group": "Trust bar",
+      "type": "text",
+      "default": "Accredited"
+    },
+    {
+      "id": "trust2_text",
+      "label": "Trust 2 text",
+      "group": "Trust bar",
+      "type": "text",
+      "default": "Move Assured · AIM"
+    },
+    {
+      "id": "trust3_title",
+      "label": "Trust 3 title",
+      "group": "Trust bar",
+      "type": "text",
+      "default": "Digital Referral"
+    },
+    {
+      "id": "trust3_text",
+      "label": "Trust 3 text",
+      "group": "Trust bar",
+      "type": "text",
+      "default": "One form · two minutes"
+    },
+    {
+      "id": "panel_eyebrow",
+      "label": "Panel eyebrow",
+      "group": "Partnership panel",
+      "type": "text",
+      "default": "A Partnership Proposal"
+    },
+    {
+      "id": "panel_title_line1",
+      "label": "Panel title — line 1",
+      "group": "Partnership panel",
+      "type": "text",
+      "default": "Why estate agents"
+    },
+    {
+      "id": "panel_title_line2",
+      "label": "Panel title — line 2",
+      "group": "Partnership panel",
+      "type": "text",
+      "default": "refer to us."
+    },
+    {
+      "id": "panel_lead",
+      "label": "Panel lead",
+      "group": "Partnership panel",
+      "type": "textarea",
+      "default": "Everything prepared for you in advance. The move becomes a quiet background process, not another thing on your desk."
+    },
+    {
+      "id": "benefit1_title",
+      "label": "Benefit 1 title",
+      "group": "Partnership panel",
+      "type": "text",
+      "default": "Simple digital referral"
+    },
+    {
+      "id": "benefit1_body",
+      "label": "Benefit 1 body",
+      "group": "Partnership panel",
+      "type": "textarea",
+      "default": "One form, under two minutes. We take it from there - your client hears from us the same day."
+    },
+    {
+      "id": "benefit2_title",
+      "label": "Benefit 2 title",
+      "group": "Partnership panel",
+      "type": "text",
+      "default": "We handle everything"
+    },
+    {
+      "id": "benefit2_body",
+      "label": "Benefit 2 body",
+      "group": "Partnership panel",
+      "type": "textarea",
+      "default": "From first contact to settled in. No admin, no callbacks, no chasing on your side."
+    },
+    {
+      "id": "benefit3_title",
+      "label": "Benefit 3 title",
+      "group": "Partnership panel",
+      "type": "text",
+      "default": "Your reputation, protected"
+    },
+    {
+      "id": "benefit3_body",
+      "label": "Benefit 3 body",
+      "group": "Partnership panel",
+      "type": "textarea",
+      "default": "A move handled quietly and well reflects directly on the agent who recommended it."
+    },
+    {
+      "id": "benefit4_title",
+      "label": "Benefit 4 title",
+      "group": "Partnership panel",
+      "type": "text",
+      "default": "Chain delays handled calmly"
+    },
+    {
+      "id": "benefit4_body",
+      "label": "Benefit 4 body",
+      "group": "Partnership panel",
+      "type": "textarea",
+      "default": "Key Wait Waiver available - if keys are late, we wait, you don't field calls."
+    },
+    {
+      "id": "benefit5_title",
+      "label": "Benefit 5 title",
+      "group": "Partnership panel",
+      "type": "text",
+      "default": "Property handed over intact"
+    },
+    {
+      "id": "benefit5_body",
+      "label": "Benefit 5 body",
+      "group": "Partnership panel",
+      "type": "textarea",
+      "default": "Floor runners, banister covers, door-frame protection as standard - no apology calls to the vendor."
+    },
+    {
+      "id": "tiers_eyebrow",
+      "label": "Section eyebrow",
+      "group": "Tiers — heading",
+      "type": "text",
+      "default": "Three Levels of Service"
+    },
+    {
+      "id": "tiers_title_line1",
+      "label": "Section title — line 1",
+      "group": "Tiers — heading",
+      "type": "text",
+      "default": "The right level of care"
+    },
+    {
+      "id": "tiers_title_pre",
+      "label": "Section title — line 2 first part",
+      "group": "Tiers — heading",
+      "type": "text",
+      "default": "for "
+    },
+    {
+      "id": "tiers_title_em",
+      "label": "Section title — line 2 italic part",
+      "group": "Tiers — heading",
+      "type": "text",
+      "default": "every Bristol move."
+    },
+    {
+      "id": "tiers_note",
+      "label": "Section note",
+      "group": "Tiers — heading",
+      "type": "textarea",
+      "default": "Every package includes a dedicated Move Manager, fixed quote on survey, and full protection of the property at both ends."
+    },
+    {
+      "id": "tier1_label",
+      "label": "Tier label",
+      "group": "Tier 1",
+      "type": "text",
+      "default": "Level One"
+    },
+    {
+      "id": "tier1_name_pre",
+      "label": "Tier name — first part",
+      "group": "Tier 1",
+      "type": "text",
+      "default": "Painless "
+    },
+    {
+      "id": "tier1_name_em",
+      "label": "Tier name — italic part",
+      "group": "Tier 1",
+      "type": "text",
+      "default": "Removal"
+    },
+    {
+      "id": "tier1_lead",
+      "label": "Tier lead",
+      "group": "Tier 1",
+      "type": "textarea",
+      "default": "Your client packs. We handle everything from the doorstep onward - properly, carefully, on time."
+    },
+    {
+      "id": "tier1_b1",
+      "label": "Bullet 1",
+      "group": "Tier 1",
+      "type": "text",
+      "default": "Dedicated Move Manager & trusted in-house crew"
+    },
+    {
+      "id": "tier1_b2",
+      "label": "Bullet 2",
+      "group": "Tier 1",
+      "type": "text",
+      "default": "Loading, transport & unloading by our own team"
+    },
+    {
+      "id": "tier1_b3",
+      "label": "Bullet 3",
+      "group": "Tier 1",
+      "type": "text",
+      "default": "Furniture disassembly & reassembly included"
+    },
+    {
+      "id": "tier1_b4",
+      "label": "Bullet 4",
+      "group": "Tier 1",
+      "type": "text",
+      "default": "Sofa covers, mattress protectors, TV & picture bags as standard"
+    },
+    {
+      "id": "tier1_b5",
+      "label": "Bullet 5",
+      "group": "Tier 1",
+      "type": "text",
+      "default": "Floor runners and property protection at both ends"
+    },
+    {
+      "id": "tier1_b6",
+      "label": "Bullet 6",
+      "group": "Tier 1",
+      "type": "text",
+      "default": "£15,000 Goods-in-Transit cover per van"
+    },
+    {
+      "id": "tier1_footer_label",
+      "label": "Footer label",
+      "group": "Tier 1",
+      "type": "text",
+      "default": "Ideal for"
+    },
+    {
+      "id": "tier1_footer_body",
+      "label": "Footer body",
+      "group": "Tier 1",
+      "type": "textarea",
+      "default": "Straightforward chains and confident self-packers who still want a proper, insured, uniformed crew on the day."
+    },
+    {
+      "id": "tier2_ribbon",
+      "label": "Ribbon",
+      "group": "Tier 2 (featured)",
+      "type": "text",
+      "default": "Most Requested"
+    },
+    {
+      "id": "tier2_label",
+      "label": "Tier label",
+      "group": "Tier 2 (featured)",
+      "type": "text",
+      "default": "Level Two"
+    },
+    {
+      "id": "tier2_name_pre",
+      "label": "Tier name — first part",
+      "group": "Tier 2 (featured)",
+      "type": "text",
+      "default": "Painless "
+    },
+    {
+      "id": "tier2_name_em",
+      "label": "Tier name — italic part",
+      "group": "Tier 2 (featured)",
+      "type": "text",
+      "default": "Packing"
+    },
+    {
+      "id": "tier2_lead",
+      "label": "Tier lead",
+      "group": "Tier 2 (featured)",
+      "type": "textarea",
+      "default": "We pack, we move, we unpack. Your client goes out in the morning and comes home to a new house that already feels lived-in."
+    },
+    {
+      "id": "tier2_b1",
+      "label": "Bullet 1",
+      "group": "Tier 2 (featured)",
+      "type": "text",
+      "default": "Everything in Painless Removal"
+    },
+    {
+      "id": "tier2_b2",
+      "label": "Bullet 2",
+      "group": "Tier 2 (featured)",
+      "type": "text",
+      "default": "Full professional packing - fragile, wardrobe, kitchen, loft"
+    },
+    {
+      "id": "tier2_b3",
+      "label": "Bullet 3",
+      "group": "Tier 2 (featured)",
+      "type": "text",
+      "default": "All premium materials supplied & removed"
+    },
+    {
+      "id": "tier2_b4",
+      "label": "Bullet 4",
+      "group": "Tier 2 (featured)",
+      "type": "text",
+      "default": "Specialist handling for artwork, mirrors & glass"
+    },
+    {
+      "id": "tier2_b5",
+      "label": "Bullet 5",
+      "group": "Tier 2 (featured)",
+      "type": "text",
+      "default": "Unpack & placement at destination"
+    },
+    {
+      "id": "tier2_b6",
+      "label": "Bullet 6",
+      "group": "Tier 2 (featured)",
+      "type": "text",
+      "default": "Packed items covered under transit insurance"
+    },
+    {
+      "id": "tier2_footer_label",
+      "label": "Footer label",
+      "group": "Tier 2 (featured)",
+      "type": "text",
+      "default": "Ideal for"
+    },
+    {
+      "id": "tier2_footer_body",
+      "label": "Footer body",
+      "group": "Tier 2 (featured)",
+      "type": "textarea",
+      "default": "Busy families, downsizers, and anyone whose time is worth more than a weekend of packing boxes."
+    },
+    {
+      "id": "tier3_label",
+      "label": "Tier label",
+      "group": "Tier 3",
+      "type": "text",
+      "default": "Level Three"
+    },
+    {
+      "id": "tier3_name_pre",
+      "label": "Tier name — first part",
+      "group": "Tier 3",
+      "type": "text",
+      "default": "Painless "
+    },
+    {
+      "id": "tier3_name_em",
+      "label": "Tier name — italic part",
+      "group": "Tier 3",
+      "type": "text",
+      "default": "VIP"
+    },
+    {
+      "id": "tier3_lead",
+      "label": "Tier lead",
+      "group": "Tier 3",
+      "type": "textarea",
+      "default": "Our full white-glove service with a concierge attached. The only thing your client has to do is turn the key."
+    },
+    {
+      "id": "tier3_b1",
+      "label": "Bullet 1",
+      "group": "Tier 3",
+      "type": "text",
+      "default": "Everything in Painless Packing"
+    },
+    {
+      "id": "tier3_b2",
+      "label": "Bullet 2",
+      "group": "Tier 3",
+      "type": "text",
+      "default": "Concierge: admin blitz & change-of-address"
+    },
+    {
+      "id": "tier3_b3",
+      "label": "Bullet 3",
+      "group": "Tier 3",
+      "type": "text",
+      "default": "New-home-ready: utilities, broadband, deliveries coordinated"
+    },
+    {
+      "id": "tier3_b4",
+      "label": "Bullet 4",
+      "group": "Tier 3",
+      "type": "text",
+      "default": "Settling-in day: beds made, kitchen set, artwork hung"
+    },
+    {
+      "id": "tier3_b5",
+      "label": "Bullet 5",
+      "group": "Tier 3",
+      "type": "text",
+      "default": "High-value specialist cover arranged on demand"
+    },
+    {
+      "id": "tier3_b6",
+      "label": "Bullet 6",
+      "group": "Tier 3",
+      "type": "text",
+      "default": "Weekend, early-morning & evening moves included"
+    },
+    {
+      "id": "tier3_footer_label",
+      "label": "Footer label",
+      "group": "Tier 3",
+      "type": "text",
+      "default": "Ideal for"
+    },
+    {
+      "id": "tier3_footer_body",
+      "label": "Footer body",
+      "group": "Tier 3",
+      "type": "textarea",
+      "default": "Principal homes in Clifton, Redland, Sneyd Park and Leigh Woods - and any client for whom discretion is non-negotiable."
+    },
+    {
+      "id": "spec_label",
+      "label": "Band label",
+      "group": "Specialist band",
+      "type": "text",
+      "default": "For what matters most"
+    },
+    {
+      "id": "spec_title_pre",
+      "label": "Band title — first part",
+      "group": "Specialist band",
+      "type": "text",
+      "default": "Specialist handling for "
+    },
+    {
+      "id": "spec_title_em",
+      "label": "Band title — italic part",
+      "group": "Specialist band",
+      "type": "text",
+      "default": "valuables, antiques & period homes."
+    },
+    {
+      "id": "spec_body",
+      "label": "Band body",
+      "group": "Specialist band",
+      "type": "textarea",
+      "default": "We've packed grand pianos, antique clocks, vintage wine collections and family heirlooms passed down through generations. High-value specialist cover arranged on demand - underwritten above and beyond our standard policy, for the items and addresses that need it."
+    },
+    {
+      "id": "spec_item1",
+      "label": "Item 1",
+      "group": "Specialist band",
+      "type": "text",
+      "default": "Fine art & framed works"
+    },
+    {
+      "id": "spec_item2",
+      "label": "Item 2",
+      "group": "Specialist band",
+      "type": "text",
+      "default": "Antique furniture"
+    },
+    {
+      "id": "spec_item3",
+      "label": "Item 3",
+      "group": "Specialist band",
+      "type": "text",
+      "default": "Grand & upright pianos"
+    },
+    {
+      "id": "spec_item4",
+      "label": "Item 4",
+      "group": "Specialist band",
+      "type": "text",
+      "default": "Wine cellars"
+    },
+    {
+      "id": "spec_item5",
+      "label": "Item 5",
+      "group": "Specialist band",
+      "type": "text",
+      "default": "Georgian & listed homes"
+    },
+    {
+      "id": "spec_item6",
+      "label": "Item 6",
+      "group": "Specialist band",
+      "type": "text",
+      "default": "Narrow access & cranes"
+    },
+    {
+      "id": "why_title_line1",
+      "label": "Reviews title — line 1",
+      "group": "Reviews",
+      "type": "text",
+      "default": "What Bristol clients"
+    },
+    {
+      "id": "why_title_em",
+      "label": "Reviews title — italic part",
+      "group": "Reviews",
+      "type": "text",
+      "default": "quietly say"
+    },
+    {
+      "id": "why_title_post",
+      "label": "Reviews title — rest",
+      "group": "Reviews",
+      "type": "text",
+      "default": " about us."
+    },
+    {
+      "id": "quote1_text",
+      "label": "Quote 1 text",
+      "group": "Reviews",
+      "type": "textarea",
+      "default": "\"They did what it says on the tin - made the whole process very painless. Friendly, efficient, the whole experience was effortless.\""
+    },
+    {
+      "id": "quote1_cite",
+      "label": "Quote 1 attribution",
+      "group": "Reviews",
+      "type": "text",
+      "default": "Ellen J. · Clifton, BS8"
+    },
+    {
+      "id": "quote2_text",
+      "label": "Quote 2 text",
+      "group": "Reviews",
+      "type": "textarea",
+      "default": "\"Prompt and professional from the initial quote through to the end of the removal. We went for the full packing package - painless from start to finish.\""
+    },
+    {
+      "id": "quote2_cite",
+      "label": "Quote 2 attribution",
+      "group": "Reviews",
+      "type": "text",
+      "default": "James & Victoria W. · Redland, BS6"
+    },
+    {
+      "id": "quote3_text",
+      "label": "Quote 3 text",
+      "group": "Reviews",
+      "type": "textarea",
+      "default": "\"Couldn't recommend them more. Very kind, very efficient. They go above and beyond.\""
+    },
+    {
+      "id": "quote3_cite",
+      "label": "Quote 3 attribution",
+      "group": "Reviews",
+      "type": "text",
+      "default": "Charles H. · Sneyd Park, BS9"
+    },
+    {
+      "id": "reviews_stars",
+      "label": "Reviews stars",
+      "group": "Reviews",
+      "type": "text",
+      "default": "★★★★★"
+    },
+    {
+      "id": "reviews_score",
+      "label": "Reviews score",
+      "group": "Reviews",
+      "type": "text",
+      "default": "4.9 / 5"
+    },
+    {
+      "id": "reviews_meta",
+      "label": "Reviews meta",
+      "group": "Reviews",
+      "type": "text",
+      "default": "122 verified Google reviews"
+    },
+    {
+      "id": "how_title_pre",
+      "label": "How-it-works title — first part",
+      "group": "How it works",
+      "type": "text",
+      "default": "How we make it "
+    },
+    {
+      "id": "how_title_em",
+      "label": "How-it-works title — italic part",
+      "group": "How it works",
+      "type": "text",
+      "default": "simple"
+    },
+    {
+      "id": "how_title_post",
+      "label": "How-it-works title — line 2",
+      "group": "How it works",
+      "type": "text",
+      "default": "for your client."
+    },
+    {
+      "id": "step1_title",
+      "label": "Step 1 title",
+      "group": "How it works",
+      "type": "text",
+      "default": "Introduction"
+    },
+    {
+      "id": "step1_body",
+      "label": "Step 1 body",
+      "group": "How it works",
+      "type": "textarea",
+      "default": "A quick call - no obligation, no hard sell. We listen first."
+    },
+    {
+      "id": "step2_title",
+      "label": "Step 2 title",
+      "group": "How it works",
+      "type": "text",
+      "default": "Home Survey"
+    },
+    {
+      "id": "step2_body",
+      "label": "Step 2 body",
+      "group": "How it works",
+      "type": "textarea",
+      "default": "We visit the property. Fixed, bespoke quote on the spot."
+    },
+    {
+      "id": "step3_title",
+      "label": "Step 3 title",
+      "group": "How it works",
+      "type": "text",
+      "default": "Move Day"
+    },
+    {
+      "id": "step3_body",
+      "label": "Step 3 body",
+      "group": "How it works",
+      "type": "textarea",
+      "default": "Our own crew - on time, in uniform, in full control."
+    },
+    {
+      "id": "step4_title",
+      "label": "Step 4 title",
+      "group": "How it works",
+      "type": "text",
+      "default": "Settled In"
+    },
+    {
+      "id": "step4_body",
+      "label": "Step 4 body",
+      "group": "How it works",
+      "type": "textarea",
+      "default": "Everything placed. Your client relaxes. You get the thank-you."
+    },
+    {
+      "id": "jay_quote",
+      "label": "Director quote",
+      "group": "How it works",
+      "type": "textarea",
+      "default": "Your client speaks to one person, start to finish - same name, same direct number, same standard. We keep the move firmly in our hands, so you don't have to think about it after the referral."
+    },
+    {
+      "id": "jay_cite",
+      "label": "Director attribution",
+      "group": "How it works",
+      "type": "text",
+      "default": "Jay Newton - Director, Painless Removals"
+    },
+    {
+      "id": "banner_title_pre",
+      "label": "Banner title — first part",
+      "group": "Banner & footer",
+      "type": "text",
+      "default": "Careful hands. Calm minds. "
+    },
+    {
+      "id": "banner_title_em",
+      "label": "Banner title — italic part",
+      "group": "Banner & footer",
+      "type": "text",
+      "default": "Better moves."
+    },
+    {
+      "id": "banner_body",
+      "label": "Banner body",
+      "group": "Banner & footer",
+      "type": "textarea",
+      "default": "We know how important your client's home and time are - and that your recommendation is never given lightly. That's why we treat every move as if it were our own."
+    },
+    {
+      "id": "banner_cta_label",
+      "label": "Banner CTA label",
+      "group": "Banner & footer",
+      "type": "text",
+      "default": "Book a free survey"
+    },
+    {
+      "id": "banner_cta_phone",
+      "label": "Banner CTA phone",
+      "group": "Banner & footer",
+      "type": "text",
+      "default": "0117 287 0082"
+    },
+    {
+      "id": "footer_tag_pre",
+      "label": "Footer tagline — first part",
+      "group": "Banner & footer",
+      "type": "text",
+      "default": "Bristol "
+    },
+    {
+      "id": "footer_tag_post",
+      "label": "Footer tagline — rest",
+      "group": "Banner & footer",
+      "type": "text",
+      "default": " Independent since 1978"
+    },
+    {
+      "id": "contact1_label",
+      "label": "Contact 1 label",
+      "group": "Banner & footer",
+      "type": "text",
+      "default": "Phone"
+    },
+    {
+      "id": "contact1_value",
+      "label": "Contact 1 value",
+      "group": "Banner & footer",
+      "type": "text",
+      "default": "0117 287 0082"
+    },
+    {
+      "id": "contact2_label",
+      "label": "Contact 2 label",
+      "group": "Banner & footer",
+      "type": "text",
+      "default": "Email"
+    },
+    {
+      "id": "contact2_value",
+      "label": "Contact 2 value",
+      "group": "Banner & footer",
+      "type": "text",
+      "default": "hello@painlessremovals.com"
+    },
+    {
+      "id": "contact3_label",
+      "label": "Contact 3 label",
+      "group": "Banner & footer",
+      "type": "text",
+      "default": "Website"
+    },
+    {
+      "id": "contact3_value",
+      "label": "Contact 3 value",
+      "group": "Banner & footer",
+      "type": "text",
+      "default": "painlessremovals.com"
+    },
+    {
+      "id": "contact4_label",
+      "label": "Contact 4 label",
+      "group": "Banner & footer",
+      "type": "text",
+      "default": "Head Office"
+    },
+    {
+      "id": "contact4_value",
+      "label": "Contact 4 value (HTML allowed)",
+      "group": "Banner & footer",
+      "type": "text",
+      "default": "290–294 Southmead Rd<br>Bristol BS10 5EN"
+    },
+    {
+      "id": "cta_box_label",
+      "label": "CTA box label",
+      "group": "Banner & footer",
+      "type": "text",
+      "default": "Agent Hotline"
+    },
+    {
+      "id": "cta_box_pre",
+      "label": "CTA box text — before partner name",
+      "group": "Banner & footer",
+      "type": "text",
+      "default": "Direct line for "
+    },
+    {
+      "id": "cta_box_post",
+      "label": "CTA box text — after partner name",
+      "group": "Banner & footer",
+      "type": "text",
+      "default": " referrals - weekends & out-of-hours on request."
+    }
+  ]
+}

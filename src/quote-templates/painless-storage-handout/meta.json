@@ -1,0 +1,505 @@
+{
+  "id": "painless-storage-handout",
+  "name": "Storage Handout",
+  "default_subject": "Storage options from Painless Removals",
+  "default_body": "Hi {{recipient_first_name}},\n\nPlease find attached our storage handout — managed, self-storage and hybrid options, all Bristol-based and fully insured.\n\nThanks,\n{{sender_name}}",
+  "fields": [
+    {
+      "id": "brand_strap",
+      "label": "Brand strapline",
+      "group": "Brand & footer",
+      "type": "text",
+      "default": "Making removals painless since 1978"
+    },
+    {
+      "id": "lockup_label",
+      "label": "Lockup label",
+      "group": "Brand & footer",
+      "type": "text",
+      "default": "Enquiries"
+    },
+    {
+      "id": "lockup_phone",
+      "label": "Lockup phone",
+      "group": "Brand & footer",
+      "type": "text",
+      "default": "0117 287 0082"
+    },
+    {
+      "id": "footer_address",
+      "label": "Footer address",
+      "group": "Brand & footer",
+      "type": "text",
+      "default": "Painless Removals Ltd · 290–294 Southmead Rd, Bristol BS10 5EN"
+    },
+    {
+      "id": "footer_email",
+      "label": "Footer email",
+      "group": "Brand & footer",
+      "type": "text",
+      "default": "hello@painlessremovals.com"
+    },
+    {
+      "id": "footer_phone",
+      "label": "Footer phone",
+      "group": "Brand & footer",
+      "type": "text",
+      "default": "0117 287 0082"
+    },
+    {
+      "id": "hero_eyebrow",
+      "label": "Hero eyebrow",
+      "group": "Hero",
+      "type": "text",
+      "default": "MANAGED · SELF-STORAGE · HYBRID"
+    },
+    {
+      "id": "hero_headline_pre",
+      "label": "Hero headline — first part",
+      "group": "Hero",
+      "type": "text",
+      "default": "Storage, on "
+    },
+    {
+      "id": "hero_headline_em",
+      "label": "Hero headline — italic part",
+      "group": "Hero",
+      "type": "text",
+      "default": "your terms."
+    },
+    {
+      "id": "hero_lede",
+      "label": "Hero lede (HTML allowed)",
+      "group": "Hero",
+      "type": "textarea",
+      "default": "Three flexible storage options - managed, self-storage, or a mix of both. All Bristol-based, all fully insured, all with <strong>short-notice access</strong> when you need it."
+    },
+    {
+      "id": "opt1_tag",
+      "label": "Tag",
+      "group": "Storage option 1",
+      "type": "text",
+      "default": "OPTION 01 · MANAGED"
+    },
+    {
+      "id": "opt1_title_pre",
+      "label": "Title — first part",
+      "group": "Storage option 1",
+      "type": "text",
+      "default": "Our "
+    },
+    {
+      "id": "opt1_title_em",
+      "label": "Title — italic part",
+      "group": "Storage option 1",
+      "type": "text",
+      "default": "managed storage"
+    },
+    {
+      "id": "opt1_b1",
+      "label": "Bullet 1",
+      "group": "Storage option 1",
+      "type": "text",
+      "default": "20,000 sq ft facility in Clifton"
+    },
+    {
+      "id": "opt1_b2",
+      "label": "Bullet 2",
+      "group": "Storage option 1",
+      "type": "text",
+      "default": "Insurance cover up to £150,000"
+    },
+    {
+      "id": "opt1_b3",
+      "label": "Bullet 3",
+      "group": "Storage option 1",
+      "type": "text",
+      "default": "Best for longer-term storage"
+    },
+    {
+      "id": "opt1_b4",
+      "label": "Bullet 4",
+      "group": "Storage option 1",
+      "type": "text",
+      "default": "Access by arrangement, 24-48 hours notice"
+    },
+    {
+      "id": "opt2_tag",
+      "label": "Tag",
+      "group": "Storage option 2",
+      "type": "text",
+      "default": "OPTION 02 · SELF-STORAGE"
+    },
+    {
+      "id": "opt2_title_pre",
+      "label": "Title — first part",
+      "group": "Storage option 2",
+      "type": "text",
+      "default": "Self-storage "
+    },
+    {
+      "id": "opt2_title_em",
+      "label": "Title — italic part",
+      "group": "Storage option 2",
+      "type": "text",
+      "default": "with flexibility"
+    },
+    {
+      "id": "opt2_b1",
+      "label": "Bullet 1",
+      "group": "Storage option 2",
+      "type": "text",
+      "default": "Better-than-direct rates at Access Self Storage and More Self Storage"
+    },
+    {
+      "id": "opt2_b2",
+      "label": "Bullet 2",
+      "group": "Storage option 2",
+      "type": "text",
+      "default": "24-hour self-access, in and out any time"
+    },
+    {
+      "id": "opt2_b3",
+      "label": "Bullet 3",
+      "group": "Storage option 2",
+      "type": "text",
+      "default": "Flexible short-term terms"
+    },
+    {
+      "id": "opt3_tag",
+      "label": "Tag",
+      "group": "Storage option 3",
+      "type": "text",
+      "default": "OPTION 03 · HYBRID"
+    },
+    {
+      "id": "opt3_title_pre",
+      "label": "Title — first part",
+      "group": "Storage option 3",
+      "type": "text",
+      "default": "A "
+    },
+    {
+      "id": "opt3_title_em",
+      "label": "Title — italic part",
+      "group": "Storage option 3",
+      "type": "text",
+      "default": "hybrid approach"
+    },
+    {
+      "id": "opt3_b1",
+      "label": "Bullet 1",
+      "group": "Storage option 3",
+      "type": "text",
+      "default": "Mix of managed and self-storage depending on needs"
+    },
+    {
+      "id": "opt3_b2",
+      "label": "Bullet 2",
+      "group": "Storage option 3",
+      "type": "text",
+      "default": "Sized to your business"
+    },
+    {
+      "id": "opt3_b3",
+      "label": "Bullet 3",
+      "group": "Storage option 3",
+      "type": "text",
+      "default": "We help you structure it"
+    },
+    {
+      "id": "hl1_title_pre",
+      "label": "Highlight 1 title — first part",
+      "group": "Highlights",
+      "type": "text",
+      "default": "Fully insured "
+    },
+    {
+      "id": "hl1_title_em",
+      "label": "Highlight 1 title — italic part",
+      "group": "Highlights",
+      "type": "text",
+      "default": "& accredited"
+    },
+    {
+      "id": "hl1_body",
+      "label": "Highlight 1 body (HTML allowed)",
+      "group": "Highlights",
+      "type": "textarea",
+      "default": "Comprehensive <strong>public liability cover</strong> on every storage unit, indoor and out. Move Assured and AIM accredited operator."
+    },
+    {
+      "id": "hl2_title_pre",
+      "label": "Highlight 2 title — first part",
+      "group": "Highlights",
+      "type": "text",
+      "default": "Transparent "
+    },
+    {
+      "id": "hl2_title_em",
+      "label": "Highlight 2 title — italic part",
+      "group": "Highlights",
+      "type": "text",
+      "default": "pricing"
+    },
+    {
+      "id": "hl2_body",
+      "label": "Highlight 2 body (HTML allowed)",
+      "group": "Highlights",
+      "type": "textarea",
+      "default": "Clear, itemised quotes - <strong>no hidden extras, no surprises.</strong> You see the full picture before you commit to anything."
+    },
+    {
+      "id": "cta_tag",
+      "label": "Offer tag",
+      "group": "Offer & QR",
+      "type": "text",
+      "default": "LIMITED OFFER"
+    },
+    {
+      "id": "cta_headline_pre",
+      "label": "Offer headline — first part",
+      "group": "Offer & QR",
+      "type": "text",
+      "default": "50% off your "
+    },
+    {
+      "id": "cta_headline_em",
+      "label": "Offer headline — italic part",
+      "group": "Offer & QR",
+      "type": "text",
+      "default": "first month"
+    },
+    {
+      "id": "cta_body",
+      "label": "Offer body (HTML allowed)",
+      "group": "Offer & QR",
+      "type": "textarea",
+      "default": "Moving in, scaling down, or just out of room? Get <strong>50% off your first month</strong> of managed storage when you quote online. A few quick questions, no fuss, no commitment."
+    },
+    {
+      "id": "qr_eyebrow",
+      "label": "QR card eyebrow",
+      "group": "Offer & QR",
+      "type": "text",
+      "default": "SCAN TO QUOTE"
+    },
+    {
+      "id": "qr_url",
+      "label": "QR card URL",
+      "group": "Offer & QR",
+      "type": "text",
+      "default": "painlessremovals.com/storage-service"
+    },
+    {
+      "id": "qr_time",
+      "label": "QR card time note",
+      "group": "Offer & QR",
+      "type": "text",
+      "default": "Fills in under 47 seconds"
+    },
+    {
+      "id": "services_marker",
+      "label": "Section marker",
+      "group": "Why Painless",
+      "type": "text",
+      "default": "WHY PAINLESS FOR STORAGE"
+    },
+    {
+      "id": "services_title_pre",
+      "label": "Section title — first part",
+      "group": "Why Painless",
+      "type": "text",
+      "default": "Looking after Bristol's stuff "
+    },
+    {
+      "id": "services_title_em",
+      "label": "Section title — italic part",
+      "group": "Why Painless",
+      "type": "text",
+      "default": "since 1978"
+    },
+    {
+      "id": "svc1_title",
+      "label": "Service 1 title",
+      "group": "Why Painless",
+      "type": "text",
+      "default": "Nearly 50 years on the same patch"
+    },
+    {
+      "id": "svc1_body",
+      "label": "Service 1 body",
+      "group": "Why Painless",
+      "type": "textarea",
+      "default": "Founded in 1978 - one of Bristol's longest-established storage operators. Your things in hands that have seen everything."
+    },
+    {
+      "id": "svc2_title",
+      "label": "Service 2 title",
+      "group": "Why Painless",
+      "type": "text",
+      "default": "Instant storage quote in under a minute"
+    },
+    {
+      "id": "svc2_body",
+      "label": "Service 2 body",
+      "group": "Why Painless",
+      "type": "textarea",
+      "default": "No phone calls required. The online tool gives a transparent storage rate fast - a few quick questions, no fuss, no commitment."
+    },
+    {
+      "id": "svc3_title",
+      "label": "Service 3 title",
+      "group": "Why Painless",
+      "type": "text",
+      "default": "Bristol-based, independent"
+    },
+    {
+      "id": "svc3_body",
+      "label": "Service 3 body",
+      "group": "Why Painless",
+      "type": "textarea",
+      "default": "Run out of Southmead since day one. Call the office and you'll get a real person - and the same person, every time."
+    },
+    {
+      "id": "svc4_title",
+      "label": "Service 4 title",
+      "group": "Why Painless",
+      "type": "text",
+      "default": "Transparent, no-surprise pricing"
+    },
+    {
+      "id": "svc4_body",
+      "label": "Service 4 body",
+      "group": "Why Painless",
+      "type": "textarea",
+      "default": "Clear, itemised quotes with no hidden extras. You see the full picture before making any commitment."
+    },
+    {
+      "id": "team_marker",
+      "label": "Section marker",
+      "group": "Team",
+      "type": "text",
+      "default": "THE TEAM"
+    },
+    {
+      "id": "team_title_pre",
+      "label": "Section title — first part",
+      "group": "Team",
+      "type": "text",
+      "default": "The team behind "
+    },
+    {
+      "id": "team_title_em",
+      "label": "Section title — italic part",
+      "group": "Team",
+      "type": "text",
+      "default": "Painless Removals"
+    },
+    {
+      "id": "team1_role",
+      "label": "Team 1 role",
+      "group": "Team",
+      "type": "text",
+      "default": "DIRECTOR"
+    },
+    {
+      "id": "team1_name",
+      "label": "Team 1 name",
+      "group": "Team",
+      "type": "text",
+      "default": "Jay"
+    },
+    {
+      "id": "team1_bio",
+      "label": "Team 1 bio",
+      "group": "Team",
+      "type": "textarea",
+      "default": "Managing Director. Runs the Bristol operation day-to-day - hands-on at the Clifton store, knows the stock, and the customers using it."
+    },
+    {
+      "id": "team2_role",
+      "label": "Team 2 role",
+      "group": "Team",
+      "type": "text",
+      "default": "BD & PARTNERSHIPS"
+    },
+    {
+      "id": "team2_name",
+      "label": "Team 2 name",
+      "group": "Team",
+      "type": "text",
+      "default": "Richard"
+    },
+    {
+      "id": "team2_bio",
+      "label": "Team 2 bio",
+      "group": "Team",
+      "type": "textarea",
+      "default": "Came from senior BD roles at national companies. Leads partnerships at Painless - your single point of contact, every step of the way."
+    },
+    {
+      "id": "team3_role",
+      "label": "Team 3 role",
+      "group": "Team",
+      "type": "text",
+      "default": "CUSTOMER RELATIONSHIPS"
+    },
+    {
+      "id": "team3_name",
+      "label": "Team 3 name",
+      "group": "Team",
+      "type": "text",
+      "default": "Tom"
+    },
+    {
+      "id": "team3_bio",
+      "label": "Team 3 bio",
+      "group": "Team",
+      "type": "textarea",
+      "default": "Linguist by training, fluent French and Spanish. Most likely the first voice you'll hear when you call - calm, organised front-of-house for every enquiry."
+    },
+    {
+      "id": "testimonial_pre",
+      "label": "Testimonial — first part",
+      "group": "Testimonial",
+      "type": "text",
+      "default": "We used Painless Removals for an "
+    },
+    {
+      "id": "testimonial_strong",
+      "label": "Testimonial — bold part",
+      "group": "Testimonial",
+      "type": "text",
+      "default": "office move"
+    },
+    {
+      "id": "testimonial_post",
+      "label": "Testimonial — rest",
+      "group": "Testimonial",
+      "type": "textarea",
+      "default": " and I cannot recommend them enough. From the initial contact to moving day everything went smoothly. The whole process was easy, they showed up on time and got stuck in straight away. This took a lot of stress away from the whole project."
+    },
+    {
+      "id": "testimonial_stars",
+      "label": "Testimonial stars",
+      "group": "Testimonial",
+      "type": "text",
+      "default": "★★★★★"
+    },
+    {
+      "id": "testimonial_name",
+      "label": "Testimonial name",
+      "group": "Testimonial",
+      "type": "text",
+      "default": "R Newman"
+    },
+    {
+      "id": "testimonial_source",
+      "label": "Testimonial source",
+      "group": "Testimonial",
+      "type": "text",
+      "default": "4.9 / 5 across 122 verified reviews"
+    }
+  ]
+}
