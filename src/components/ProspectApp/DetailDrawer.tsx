@@ -10,6 +10,7 @@ import NoteTimeline from './NoteTimeline';
 import FollowUpPicker from './FollowUpPicker';
 import AddressAutocomplete from './AddressAutocomplete';
 import ContactsSection from './ContactsSection';
+import DrawerQuotes from './DrawerQuotes';
 
 interface Props {
   company: Company | null;
@@ -596,6 +597,9 @@ export default function DetailDrawer({ company, categories, drawerMode, onClose,
               <span style={{ color: THEME.textSecondary }}>{formatRelativeTime(company.updated_at)}</span>
             </div>
           </div>
+
+          {/* Quotes */}
+          <DrawerQuotes companyId={company.id} />
 
           {/* Notes */}
           <div className="space-y-2">

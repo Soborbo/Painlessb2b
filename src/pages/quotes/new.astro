@@ -1,0 +1,122 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { listTemplates } from '../../quotes/templates';
+import { getCfEnv } from '../../lib/cf-env';
+
+const templates = listTemplates();
+
+const companyId = Astro.url.searchParams.get('company_id');
+const contactId = Astro.url.searchParams.get('contact_id');
+
+let companyContext: { id: string; name: string; contact?: string } | null = null;
+if (companyId) {
+  const cfEnv = await getCfEnv();
+  const company = await cfEnv.DB.prepare(
+    'SELECT id, name, contact_name, contact_email FROM companies WHERE id = ?'
+  )
+    .bind(companyId)
+    .first<{
+      id: string;
+      name: string;
+      contact_name: string | null;
+      contact_email: string | null;
+    }>();
+  if (company) {
+    let contactLine: string | undefined;
+    if (contactId) {
+      const c = await cfEnv.DB.prepare(
+        'SELECT name, email FROM contacts WHERE id = ? AND company_id = ?'
+      )
+        .bind(contactId, companyId)
+        .first<{ name: string | null; email: string | null }>();
+      if (c) {
+        contactLine = [c.name, c.email].filter(Boolean).join(' · ');
+      }
+    } else {
+      const primary = await cfEnv.DB.prepare(
+        'SELECT name, email FROM contacts WHERE company_id = ? AND is_primary = 1 LIMIT 1'
+      )
+        .bind(companyId)
+        .first<{ name: string | null; email: string | null }>();
+      const name = primary?.name ?? company.contact_name;
+      const email = primary?.email ?? company.contact_email;
+      if (email) contactLine = [name, email].filter(Boolean).join(' · ');
+    }
+    companyContext = { id: company.id, name: company.name, contact: contactLine };
+  }
+}
+---
+<Layout title="New quote — Painless Removals">
+  <meta slot="head" name="robots" content="noindex,nofollow" />
+  <main class="mx-auto max-w-3xl px-6 py-10">
+    <header class="mb-8">
+      <a href="/quotes" class="text-sm text-gray-500 hover:underline">← Quotes</a>
+      <h1 class="mt-2 text-2xl font-semibold">New quote</h1>
+      {companyContext ? (
+        <p class="mt-1 text-sm text-gray-600">
+          For <span class="font-medium">{companyContext.name}</span>
+          {companyContext.contact && (
+            <span class="text-gray-500"> · recipient will be pre-filled: {companyContext.contact}</span>
+          )}
+        </p>
+      ) : (
+        <p class="mt-1 text-sm text-gray-500">Pick a template to start from.</p>
+      )}
+    </header>
+
+    <ul class="space-y-3">
+      {templates.map((t) => (
+        <li>
+          <button
+            data-template-id={t.id}
+            data-company-id={companyContext?.id ?? ''}
+            data-contact-id={contactId ?? ''}
+            class="quote-template-btn block w-full rounded-lg border border-gray-200 bg-white p-4 text-left hover:border-indigo-400 hover:shadow-sm"
+          >
+            <div class="font-medium">{t.name}</div>
+            <div class="mt-1 text-xs text-gray-500">
+              {t.field_count} editable fields
+            </div>
+          </button>
+        </li>
+      ))}
+    </ul>
+  </main>
+</Layout>
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>('.quote-template-btn').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const templateId = btn.dataset.templateId;
+      if (!templateId) return;
+      const companyId = btn.dataset.companyId || undefined;
+      const contactId = btn.dataset.contactId || undefined;
+      btn.disabled = true;
+      btn.style.opacity = '0.6';
+      try {
+        const res = await fetch('/api/quotes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            template_id: templateId,
+            company_id: companyId,
+            contact_id: contactId,
+          }),
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          alert(err.error || 'Failed to create quote');
+          btn.disabled = false;
+          btn.style.opacity = '1';
+          return;
+        }
+        const quote = await res.json();
+        window.location.href = `/quotes/${quote.id}/edit`;
+      } catch (e) {
+        alert('Network error');
+        btn.disabled = false;
+        btn.style.opacity = '1';
+      }
+    });
+  });
+</script>

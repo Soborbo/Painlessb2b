@@ -5,12 +5,16 @@ import { getCfEnv } from './lib/cf-env';
 export const onRequest = defineMiddleware(async (context, next) => {
   const { pathname } = context.url;
 
-  // Allow login page, auth API, and static assets
+  // Allow login page, auth API, static assets, and the public quote-tool
+  // endpoints (click redirects + Resend webhooks — each does its own
+  // signature/token verification).
   if (
     pathname === '/login' ||
     pathname.startsWith('/api/auth/') ||
     pathname.startsWith('/_astro/') ||
-    pathname.startsWith('/favicon')
+    pathname.startsWith('/favicon') ||
+    pathname.startsWith('/r/') ||
+    pathname === '/api/webhooks/resend'
   ) {
     return next();
   }

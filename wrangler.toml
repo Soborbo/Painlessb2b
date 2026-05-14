@@ -27,3 +27,17 @@ database_id = "12a5d670-5bdc-4b7c-b5ce-98fe234d7dd2"
 [[kv_namespaces]]
 binding = "SESSION"
 id = "b9f7baffd9da44328f8a09789263a826"
+
+# R2 bucket for archiving sent quote PDFs.
+# Create once: `npx wrangler r2 bucket create painless-quote-pdfs`
+[[r2_buckets]]
+binding = "QUOTE_PDFS"
+bucket_name = "painless-quote-pdfs"
+
+# Browser Rendering API for server-side PDF generation.
+# Requires Workers Paid plan.
+[browser]
+binding = "BROWSER"
+
+# Resend webhook signature secret (set via `wrangler secret put`):
+#   npx wrangler secret put RESEND_WEBHOOK_SECRET
