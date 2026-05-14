@@ -1240,9 +1240,17 @@
       display: block;
     }
 
-    /* ---------- PRINT / PDF — single-page A4 landscape brochure ---------- */
+    /* ---------- PRINT / PDF — one A4 portrait sheet per .page section ----------
+       The brochure is a tall, wide web layout whose aspect ratio is nowhere
+       near A4 landscape — the previous landscape print CSS over-compacted the
+       content and left each sheet 40-60% empty. Instead we keep the brochure's
+       full multi-column design untouched and scale each .page section down
+       with `zoom` (which, unlike `transform`, shrinks the layout box too) so
+       it lands on exactly one A4 portrait sheet. The front page is
+       content-dense (hero + panel + 3 tier cards) so it scales down further
+       than the lighter back page. Nothing is hidden or restructured. */
     @page {
-      size: A4 landscape;
+      size: A4 portrait;
       margin: 0;
     }
 
@@ -1251,7 +1259,6 @@
         background: #fff;
         margin: 0;
         padding: 0;
-        font-size: 10px;
       }
 
       * {
@@ -1264,193 +1271,39 @@
         box-shadow: none;
         border: 0;
         max-width: none;
-        width: 100%;
+        width: 210mm;
       }
 
-      /* Single-page layout: no forced breaks, full A4 landscape width */
+      /* Each section is authored at a fixed 1240px reference width, then
+         `zoom` scales the whole box onto one A4 portrait sheet (≈794 × 1123
+         px at 96dpi). margin:auto centres the scaled box on the sheet. The
+         fixed `height` (zoom × height ≈ 1123px = one sheet) plus
+         overflow:hidden is a guard rail: if Cloudflare's Linux Chromium
+         falls back to different fonts whose metrics run a hair taller than
+         the local measurement, the content clips at the sheet edge rather
+         than spilling onto a near-blank extra page. Zoom values leave
+         headroom so that clip never actually bites in practice. */
       .page {
-        width: 297mm;
+        width: 1240px;
+        margin: 0 auto;
+        overflow: hidden;
+        page-break-after: always;
+        break-after: page;
       }
+      .page:last-child {
+        page-break-after: auto;
+        break-after: auto;
+      }
+      .page-front { zoom: 0.50; height: 2246px; }
+      .page-back  { zoom: 0.62; height: 1811px; }
 
-      /* Keep small blocks together; large sections can flow */
-      .top-strip,
-      .tier, .quote-card, .jay-card, .step {
+      /* Keep cards/rows from splitting if a section ever overflows its sheet. */
+      .top-strip, .top-grid, .tiers-section, .tier,
+      .specialist-band, .bottom-grid, .banner, .footer,
+      .quote-card, .jay-card, .step {
         break-inside: avoid;
         page-break-inside: avoid;
       }
-
-      /* Explicit page break: page-back starts on a fresh sheet */
-      .page-back {
-        break-before: page;
-        page-break-before: always;
-      }
-
-      /* ====== SINGLE-PAGE A4 LANDSCAPE ====== */
-      /* Compact top strip */
-      .top-strip { padding: 2mm 7mm; gap: 6mm; border-bottom: 0.5pt solid rgba(212,168,75,0.3); grid-template-columns: auto auto 1fr auto; }
-      .top-strip .top-logo { width: 30mm; }
-      .partnership { gap: 4mm; padding-left: 4mm; }
-      .partnership-label { font-size: 6.5px; letter-spacing: 0.22em; }
-      .kf-logo { height: 18px; }
-      .top-strip .phone { font-size: 12px; }
-      .top-strip .phone .phone-label { font-size: 6.5px; letter-spacing: 0.22em; margin-bottom: 0; }
-
-      /* Restore multi-column layouts that responsive-stacks at <1180px */
-      .top-grid { min-height: 0; grid-template-columns: 1.6fr 1fr; }
-      .trust-bar { grid-template-columns: repeat(3, auto); }
-      .tiers { grid-template-columns: repeat(3, 1fr); }
-      .bottom-grid { grid-template-columns: 1fr 1.3fr; }
-      .steps { grid-template-columns: repeat(4, 1fr); }
-      .contact-grid { grid-template-columns: repeat(4, 1fr); }
-      .specialist-band { grid-template-columns: 1fr 1.2fr 0.9fr; }
-
-      /* Un-stack trust items and contact items */
-      .trust-item {
-        border-right: 1px solid rgba(212,168,75,0.14);
-        border-bottom: 0;
-        padding-bottom: 0;
-        padding-right: 4mm;
-      }
-      .trust-item:last-child { border-right: 0; }
-      .contact-grid > div {
-        border-bottom: 0;
-        padding-bottom: 0;
-      }
-      .footer-brand {
-        border-right: 1px solid rgba(212,168,75,0.22);
-        border-bottom: 0;
-        padding-right: 4mm;
-        padding-bottom: 0;
-        flex-direction: column;
-      }
-
-      /* Hero */
-      .hero { padding: 4mm 6mm 0; min-height: 0; }
-      .hero-copy { max-width: none; }
-      .hero::before { font-size: 80px; top: 3mm; right: -3mm; }
-      .eyebrow { margin-bottom: 2mm; font-size: 6.5px; letter-spacing: 0.22em; }
-      .eyebrow::before { width: 12px; }
-      h1 { font-size: 22px; margin: 0 0 2mm; line-height: 1.04; }
-      h1 .headline-line { white-space: normal; }
-      .hero-kicker { font-size: 7px; letter-spacing: 0.18em; margin: 0 0 2mm; }
-      .hero-copy p { display: none; }
-      .hero-stats { display: none; }
-      .hero-spacer { display: none; }
-
-      /* Trust bar - 3 items */
-      .trust-bar { margin: 3mm -7mm 0; padding: 2.5mm 7mm; gap: 6mm; }
-      .trust-icon { width: 15px; height: 15px; flex: 0 0 15px; }
-      .trust-title { font-size: 7.5px; letter-spacing: 0.06em; margin-bottom: 0; }
-      .trust-text { font-size: 7.5px; }
-      .trust-item { min-height: 0; gap: 2mm; border-right-color: rgba(212,168,75,0.2); }
-
-      /* Brand panel */
-      .panel { padding: 4mm 5mm; min-height: 0; }
-      .panel::before { display: none; }
-      .panel-eyebrow { font-size: 6px; margin-bottom: 1mm; letter-spacing: 0.22em; }
-      .panel-eyebrow::before { width: 8px; }
-      .panel h2 { font-size: 11px; line-height: 1.1; margin-bottom: 1mm; }
-      .panel-rule { margin: 0.5mm 0 1.5mm; }
-      .panel-lead { display: none; }
-      .agent-benefits li { padding: 0.8mm 0; gap: 4px; grid-template-columns: 9px 1fr; }
-      .agent-benefits svg { width: 8px; height: 8px; margin-top: 1px; }
-      .agent-benefits strong { font-size: 7.5px; margin-bottom: 0; }
-      .agent-benefits span { font-size: 6.5px; line-height: 1.25; }
-      /* Hide 5th benefit for single-page fit */
-      .agent-benefits li:nth-child(5) { display: none; }
-
-      /* Tiers */
-      .tiers-section { padding: 1.5mm 7mm 2mm; }
-      .section-head { margin-bottom: 2mm; grid-template-columns: auto 1fr auto; gap: 6mm; align-items: center; }
-      .section-eyebrow { font-size: 6.5px; margin-bottom: 0.5mm; letter-spacing: 0.22em; }
-      .section-head h2 { font-size: 15px; line-height: 1.05; }
-      .section-head-note { font-size: 7px; line-height: 1.3; padding-right: 3mm; max-width: 55mm; border-right: 1px solid var(--gold); }
-
-      .tiers { gap: 2.5mm; }
-      .tier.featured { transform: none; box-shadow: 0 1.5mm 5mm rgba(241,107,33,0.1); }
-      .tier-image { aspect-ratio: 16 / 3.2; }
-      .tier-ribbon { top: 1.2mm; right: 1.2mm; font-size: 5.5px; padding: 0.8mm 1.8mm; letter-spacing: 0.12em; }
-      .tier-body { padding: 2mm 3mm 2.5mm; }
-      .tier-label { font-size: 6px; margin-bottom: 0; letter-spacing: 0.2em; }
-      .tier h3 { font-size: 12px; margin-bottom: 0; }
-      .tier-lead { display: none; }
-      .tier-list { margin-bottom: 1mm; margin-top: 1mm; }
-      .tier-list li { padding: 0.3mm 0; font-size: 6.8px; line-height: 1.25; gap: 4px; }
-      .tier-list li::before { margin-top: 0.5em; flex: 0 0 6px; width: 6px; }
-      /* Trim to 4 list items per tier for single-page fit */
-      .tier-list li:nth-child(n+5) { display: none; }
-      /* Hide "Ideal for" block on single-page to save vertical space */
-      .tier-footer { display: none; }
-
-      /* Specialist band - slim 3-col strip */
-      .specialist-band { padding: 2mm 7mm; gap: 5mm; border-top-width: 0.8mm; }
-      .band-label { font-size: 6.5px; margin-bottom: 0.5mm; letter-spacing: 0.22em; }
-      .specialist-band h3 { font-size: 11px; line-height: 1.1; }
-      .specialist-band p { font-size: 7px; line-height: 1.35; }
-      .specialist-items { gap: 0 4mm; grid-template-columns: 1fr 1fr; }
-      .specialist-items div { font-size: 6.5px; padding: 0.5mm 0; gap: 5px; border-bottom-width: 0.3px; }
-      .specialist-items div::before { margin-top: 0.5em; flex: 0 0 6px; width: 6px; }
-
-      /* Bottom grid (why + how) - super compact */
-      .bottom-grid { min-height: 0; }
-      .why-col { padding: 2.5mm 5mm 2.5mm 6mm; }
-      .why-col h2 { font-size: 10px; line-height: 1.1; }
-      .gold-hair { margin: 0 0 1mm; width: 18px; }
-      .quote-card { padding: 0 0 0 2mm; margin-bottom: 0.8mm; border-left-width: 1.5px; }
-      .quote-card p { font-size: 6.5px; line-height: 1.25; margin-bottom: 0.3mm; }
-      .quote-card cite { font-size: 6px; letter-spacing: 0.14em; }
-
-      /* Show only 1 testimonial on single-page */
-      .quote-card:nth-of-type(2),
-      .quote-card:nth-of-type(3) { display: none; }
-
-      .reviews-badge { padding: 1mm 2mm; gap: 2.5mm; margin-top: 1mm; }
-      .reviews-badge .stars { font-size: 9px; letter-spacing: 0.5px; }
-      .reviews-badge .score { font-size: 10px; }
-      .reviews-badge .meta { font-size: 6px; }
-
-      .how-head { padding: 2.5mm 5mm 0; }
-      .how-head h2 { font-size: 10px; line-height: 1.1; }
-
-      .steps { padding: 1mm 5mm 1mm; gap: 2mm; }
-      .steps::before { top: 7px; left: 26px; right: 26px; }
-      .step-number { width: 14px; height: 14px; font-size: 8px; margin-bottom: 0.8mm; border-width: 1px; }
-      .step-title { font-size: 7px; margin-bottom: 0; }
-      .step p { font-size: 6px; line-height: 1.2; }
-
-      .jay-card { margin: 0 5mm 1mm; padding: 1mm 2.5mm; grid-template-columns: 24px 1fr; gap: 2.5mm; }
-      .jay-avatar { width: 24px; height: 24px; border-width: 1px; }
-      .jay-card .quote-mark { display: none; }
-      .jay-card p { font-size: 6.5px; line-height: 1.25; margin-bottom: 0.3mm; }
-      .jay-card cite { font-size: 6px; letter-spacing: 0.14em; }
-
-      /* Banner — single-line inline CTA */
-      .banner {
-        padding: 1.5mm 7mm;
-        border-top-width: 0.6mm;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 6mm;
-        text-align: left;
-      }
-      .banner::before { display: none; }
-      .banner h3 { font-size: 11px; line-height: 1.1; margin: 0; }
-      .banner p { display: none; }
-      .banner-cta { margin: 0; padding: 1.3mm 3mm; gap: 2.5mm; font-size: 7px; letter-spacing: 0.14em; background: var(--orange) !important; }
-      .banner-cta .phone-num { font-size: 10px; }
-      .banner .gold-line { display: none; }
-
-      /* Footer */
-      .footer { padding: 1.8mm 7mm; gap: 4mm; grid-template-columns: 0.9fr 1.8fr 1fr; }
-      .footer-brand .logo { width: 28mm; }
-      .footer-brand .footer-tagline { font-size: 6px; letter-spacing: 0.18em; }
-      .footer-brand { padding-right: 3mm; border-right-width: 0.5pt; gap: 0.5mm; }
-      .contact-grid { gap: 0.5mm 3mm; font-size: 7px; grid-template-columns: repeat(4, 1fr); }
-      .contact-grid strong { font-size: 6px; letter-spacing: 0.16em; margin-bottom: 0.3mm; }
-      .cta-box { padding: 1.5mm 2mm; }
-      .cta-box strong { font-size: 6px; margin-bottom: 0.3mm; letter-spacing: 0.18em; }
-      .cta-box p { font-size: 6.5px; line-height: 1.25; }
     }
   </style>
 </head>
