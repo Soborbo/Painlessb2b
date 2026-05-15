@@ -1,9 +1,20 @@
-// One-off / re-runnable: inline external <img src> references in quote
-// templates as base64 data URIs. The PDF renderer (Cloudflare Browser
-// Rendering) fetches no external resources, so templates must be
-// self-contained. Safe to re-run — already-embedded `data:` srcs are skipped.
+// One-off / re-runnable: inline each <img> in a quote template with a
+// base64 data URI built from a known asset on disk. The PDF renderer
+// (Cloudflare Browser Rendering) fetches no external resources, so
+// templates must be self-contained.
+//
+// Raster sources are downscaled with sharp before embedding (the upstream
+// brochure images are full-resolution stock photos — embedding them at
+// native size bloated the rendered PDF roughly 10×). SVGs pass through.
+//
+// Each img is identified by a unique attribute signature (`alt` or
+// `class`) rather than by its current `src`, so the script is idempotent:
+// it doesn't matter whether the current src is the original relative path
+// or an already-embedded data URI — the next run produces a fresh
+// (downscaled) one.
 import { readFileSync, writeFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { resolve, extname } from 'node:path';
+import sharp from 'sharp';
 
 const MIME = {
   svg: 'image/svg+xml',
@@ -14,59 +25,119 @@ const MIME = {
   webp: 'image/webp',
 };
 
-// template file → { "src attribute value": "absolute source path" }
+const ENCODE = {
+  jpg: (img) => img.jpeg({ quality: 82, mozjpeg: true }),
+  jpeg: (img) => img.jpeg({ quality: 82, mozjpeg: true }),
+  png: (img) => img.png({ compressionLevel: 9 }),
+  webp: (img) => img.webp({ quality: 78 }),
+  avif: (img) => img.avif({ quality: 55 }),
+};
+
+// `match` is a regex that captures the <img> tag's `src="..."` portion
+// in group 1, so the replacement just rewrites group 1. `maxWidth` caps
+// raster width (longest edge, css px); pick ~2× the largest on-page
+// display width. Omit for SVGs.
 const JOBS = [
   {
     template: 'src/quote-templates/painless-storage-handout/template.html',
-    assets: {
-      'logo.svg': 'D:/painlessmerged/Desklodge/logo.svg',
-      'qr-storage.png': 'D:/painlessmerged/Desklodge/qr-storage.png',
-      'jay.avif': 'D:/painlessmerged/Desklodge/jay.avif',
-      'richard.avif': 'D:/painlessmerged/Desklodge/richard.avif',
-      'tom.avif': 'D:/painlessmerged/Desklodge/tom.avif',
-    },
+    assets: [
+      {
+        file: 'D:/painlessmerged/Desklodge/logo.svg',
+        match: /<img\s+(class="brand"\s+)?src="([^"]*)"(\s+class="brand")?\s+alt="Painless Removals">/g,
+      },
+      {
+        file: 'D:/painlessmerged/Desklodge/qr-storage.png',
+        match: /<img\s+src="([^"]*)"\s+alt="QR code to painlessremovals\.com\/storage-service\/">/g,
+        maxWidth: 320,
+      },
+      {
+        file: 'D:/painlessmerged/Desklodge/jay.avif',
+        match: /<img\s+src="([^"]*)"\s+alt="Jay">/g,
+        maxWidth: 200,
+      },
+      {
+        file: 'D:/painlessmerged/Desklodge/richard.avif',
+        match: /<img\s+src="([^"]*)"\s+alt="Richard">/g,
+        maxWidth: 200,
+      },
+      {
+        file: 'D:/painlessmerged/Desklodge/tom.avif',
+        match: /<img\s+src="([^"]*)"\s+alt="Tom">/g,
+        maxWidth: 200,
+      },
+    ],
   },
   {
     template: 'src/quote-templates/knight-frank-premium-brochure/template.html',
-    assets: {
-      'painless-logo.svg': 'D:/painlessmerged/Knight Frank/painless-logo.svg',
-      'images/knight-frank-logo.svg':
-        'D:/painlessmerged/Knight Frank/images/knight-frank-logo.svg',
-      'images/tier-removal.webp':
-        'D:/painlessmerged/Knight Frank/images/tier-removal.webp',
-      'images/tier-packing.webp':
-        'D:/painlessmerged/Knight Frank/images/tier-packing.webp',
-      'images/tier-vip.webp':
-        'D:/painlessmerged/Knight Frank/images/tier-vip.webp',
-      'images/jay-newton.webp':
-        'D:/painlessmerged/Knight Frank/images/jay-newton.webp',
-    },
+    assets: [
+      // painless-logo appears twice with different class= — header and footer.
+      {
+        file: 'D:/painlessmerged/Knight Frank/painless-logo.svg',
+        match: /<img\s+src="([^"]*)"\s+alt="Painless Removals Bristol"\s+class="(top-logo|logo)"\s*\/>/g,
+      },
+      {
+        file: 'D:/painlessmerged/Knight Frank/images/knight-frank-logo.svg',
+        match: /<img\s+src="([^"]*)"\s+alt="Knight Frank"\s+class="kf-logo"\s*\/>/g,
+      },
+      {
+        file: 'D:/painlessmerged/Knight Frank/images/tier-removal.webp',
+        match: /<img\s+src="([^"]*)"\s+alt="Painless Removals crew loading a van in Bristol"\s+loading="lazy"\s*\/>/g,
+        maxWidth: 800,
+      },
+      {
+        file: 'D:/painlessmerged/Knight Frank/images/tier-packing.webp',
+        match: /<img\s+src="([^"]*)"\s+alt="Painless Removals professional packing service"\s+loading="lazy"\s*\/>/g,
+        maxWidth: 800,
+      },
+      {
+        file: 'D:/painlessmerged/Knight Frank/images/tier-vip.webp',
+        match: /<img\s+src="([^"]*)"\s+alt="Painless Removals VIP concierge service"\s+loading="lazy"\s*\/>/g,
+        maxWidth: 800,
+      },
+      {
+        file: 'D:/painlessmerged/Knight Frank/images/jay-newton.webp',
+        match: /<img\s+src="([^"]*)"\s+alt="Jay Newton, Director, Painless Removals"\s*\/>/g,
+        maxWidth: 200,
+      },
+    ],
   },
 ];
 
-function dataUri(absPath) {
-  const ext = absPath.split('.').pop().toLowerCase();
+async function buildDataUri(asset) {
+  const ext = extname(asset.file).slice(1).toLowerCase();
   const mime = MIME[ext];
-  if (!mime) throw new Error(`Unknown asset extension: ${absPath}`);
-  const b64 = readFileSync(absPath).toString('base64');
-  return `data:${mime};base64,${b64}`;
+  if (!mime) throw new Error(`Unknown asset extension: ${asset.file}`);
+  if (ext === 'svg' || asset.maxWidth == null) {
+    return `data:${mime};base64,${readFileSync(asset.file).toString('base64')}`;
+  }
+  const buf = await sharp(asset.file)
+    .resize({ width: asset.maxWidth, withoutEnlargement: true })
+    .pipe(ENCODE[ext](sharp()))
+    .toBuffer();
+  return `data:${mime};base64,${buf.toString('base64')}`;
 }
 
 for (const job of JOBS) {
   const file = resolve(job.template);
+  const sizeBefore = readFileSync(file).length;
   let html = readFileSync(file, 'utf8');
-  let changed = 0;
-  for (const [srcValue, assetPath] of Object.entries(job.assets)) {
-    const needle = `src="${srcValue}"`;
-    if (!html.includes(needle)) {
-      console.warn(`  ! "${needle}" not found in ${job.template}`);
-      continue;
+  for (const asset of job.assets) {
+    const dataUri = await buildDataUri(asset);
+    let hits = 0;
+    html = html.replace(asset.match, (tag, currentSrc) => {
+      hits++;
+      return tag.replace(`src="${currentSrc}"`, `src="${dataUri}"`);
+    });
+    if (hits === 0) {
+      console.warn(`  ! no <img> matched for ${asset.file}`);
+    } else {
+      console.log(`  ${asset.file.split(/[\\/]/).pop()} → ${hits} ref(s)`);
     }
-    const uri = dataUri(assetPath);
-    const count = html.split(needle).length - 1;
-    html = html.split(needle).join(`src="${uri}"`);
-    changed += count;
   }
   writeFileSync(file, html);
-  console.log(`${job.template}: embedded ${changed} image reference(s)`);
+  const sizeAfter = readFileSync(file).length;
+  console.log(
+    `${job.template}: ${(sizeBefore / 1024).toFixed(0)}KB → ${(sizeAfter / 1024).toFixed(0)}KB ` +
+      `(${(((sizeAfter - sizeBefore) / sizeBefore) * 100).toFixed(0)}%)`
+  );
 }
